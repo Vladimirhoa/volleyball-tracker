@@ -1,16 +1,38 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:alpine
+    container_name: volley_redis
+    restart: unless-stopped
+
   volleyball_tracker:
     build: .
     container_name: volleyball_tracker
     restart: unless-stopped
     volumes:
-      - ./media:/app/media
+      - /mnt/storage6tb/volleyball_media:/app/media
       - ./data:/app/data
       - ./staticfiles:/app/staticfiles
     environment:
       - DJANGO_DEBUG=False
+    depends_on:
+      - redis
+
+  # Тот самый рабочий, который будет сжимать видео в фоне
+  celery:
+    build: .
+    container_name: volley_celery
+    restart: unless-stopped
+    command: celery -A MyVolleyApp worker --loglevel=info
+    volumes:
+      - /mnt/storage6tb/volleyball_media:/app/media
+      - ./data:/app/data
+    environment:
+      - DJANGO_DEBUG=False
+    depends_on:
+      - redis
+      - volleyball_tracker
 
   nginx:
     image: nginx:alpine
@@ -19,7 +41,7 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - ./media:/app/media
+      - /mnt/storage6tb/volleyball_media:/app/media
       - ./staticfiles:/app/staticfiles
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:

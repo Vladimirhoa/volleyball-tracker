@@ -10,6 +10,7 @@ from video.models import Video
 from .forms import MatchForm
 from video.forms import VideoForm
 from .forms import RegisterForm
+from video.tasks import process_video_task
 @login_required
 def match_list(request):
     matches = Match.objects.filter(user=request.user).order_by('-date')
@@ -74,6 +75,7 @@ def video_create(request, match_id):
                 with open(temp_file_path, 'rb') as f:
                     video.video.save(file_name, File(f), save=True)
                 os.remove(temp_file_path)
+                process_video_task.delay(video.id)
 
                 return JsonResponse({'status': 'success', 'redirect_url': f'/match/{match.id}/'})
             return JsonResponse({'status': 'uploading', 'chunk': chunk_index})
@@ -85,6 +87,7 @@ def video_create(request, match_id):
                 new_video.user = request.user
                 new_video.match = match
                 new_video.save()
+                process_video_task.delay(new_video.id)
                 return redirect('match_detail', match_id=match.id)
     else:
         form = VideoForm()

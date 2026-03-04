@@ -3,6 +3,11 @@ from django.contrib.auth.models import User
 from match.models import Match
 
 class Video(models.Model):
+    STATUS_CHOICES = [
+        ('processing', 'В очереди / Обрабатывается'),
+        ('ready', 'Готово'),
+        ('error', 'Ошибка'),
+    ]
     title = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
     video = models.FileField(upload_to='videos/%Y/%m/%d', blank=True)
