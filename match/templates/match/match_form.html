@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить матч</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+        .form-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 5px; }
+        input, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-family: inherit; }
+        textarea { resize: vertical; min-height: 100px; }
+        button { background-color: #27ae60; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; font-weight: bold; }
+        button:hover { background-color: #2ecc71; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'match_list' %}" class="back-link">← Отмена</a>
+
+    <div class="form-card">
+        <h2>Добавить новый матч 🏐</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Название (например, "Финал кубка" или "Тренировка"):</label>
+                {{ form.title }}
+            </div>
+            <div class="form-group">
+                <label>Описание (необязательно):</label>
+                {{ form.description }}
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Наш счет:</label>
+                    {{ form.my_score }}
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Счет противника:</label>
+                    {{ form.opponent_score }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Дата и время:</label>
+                {{ form.date }}
+            </div>
+
+            <button type="submit">Сохранить матч</button>
+        </form>
+    </div>
+
+</body>
+</html></title>
+</head>
+<body>
+
+</body>
+</html>

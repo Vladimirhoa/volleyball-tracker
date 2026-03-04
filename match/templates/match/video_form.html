@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузить видео</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+        .form-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-family: inherit; }
+        textarea { resize: vertical; min-height: 100px; }
+        .file-upload-box { background: #f8f9fa; border: 2px dashed #bdc3c7; padding: 20px; text-align: center; border-radius: 5px; margin-top: 5px; }
+        button { background-color: #27ae60; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 15px; font-weight: bold; }
+        button:hover { background-color: #2ecc71; }
+
+        /* Стили для прогресс-бара */
+        #progress-container {
+            display: none; /* Скрыт по умолчанию */
+            width: 100%;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        #progress-bar {
+            height: 20px;
+            width: 0%;
+            background-color: #3498db;
+            transition: width 0.2s;
+        }
+        #progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0;
+            left: 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            line-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'match_detail' match.id %}" class="back-link">← Отмена (вернуться к матчу)</a>
+
+    <div class="form-card">
+        <h2>Загрузить видео для "{{ match.title }}" 🎬</h2>
+
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Название видео (например, "1 партия" или "Хорошая атака"):</label>
+                {{ form.title }}
+            </div>
+
+            <div class="form-group">
+                <label>Описание (необязательно):</label>
+                {{ form.description }}
+            </div>
+
+            <div class="form-group">
+                <label>Файл видео:</label>
+                <div class="file-upload-box">
+                    {{ form.video }}
+                </div>
+            </div>
+
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+                <div id="progress-text">0%</div>
+            </div>
+
+            <button type="submit" id="submit-btn">Сохранить видео</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Останавливаем стандартную отправку
+
+            let form = this;
+            let formData = new FormData(form);
+
+            let submitBtn = document.getElementById('submit-btn');
+            let progressContainer = document.getElementById('progress-container');
+            let progressBar = document.getElementById('progress-bar');
+            let progressText = document.getElementById('progress-text');
+
+            // Блокируем кнопку и показываем шкалу
+            submitBtn.disabled = true;
+            submitBtn.style.backgroundColor = '#95a5a6';
+            submitBtn.innerText = 'Идет загрузка...';
+            progressContainer.style.display = 'block';
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', window.location.href, true);
+
+            // Отслеживаем прогресс
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    let percentComplete = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percentComplete + '%';
+
+                    if (percentComplete > 50) {
+                        progressText.style.color = 'white';
+                    }
+                    progressText.innerText = percentComplete + '%';
+                }
+            });
+
+            // Завершение загрузки
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    window.location.href = xhr.responseURL;
+                } else {
+                    alert('Произошла ошибка при загрузке. Возможно, файл слишком большой.');
+                    submitBtn.disabled = false;
+                    submitBtn.style.backgroundColor = '#27ae60';
+                    submitBtn.innerText = 'Сохранить видео';
+                    progressContainer.style.display = 'none';
+                }
+            };
+
+            xhr.send(formData);
+        });
+    </script>
+</body>
+</html>

@@ -15,6 +15,11 @@ class VideoInline(admin.TabularInline):
 class MatchAdmin(admin.ModelAdmin):
     inlines = [VideoInline]
 
+    def save_model(self, request, obj, form, change):
+        if not obj.user:
+            obj.user = request.user
+        super().save_model(request, obj, form, change)
+
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         for instance in instances:

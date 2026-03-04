@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ match.title }}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+        .match-header { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .video-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        video { width: 100%; border-radius: 8px; margin-top: 15px; outline: none; }
+        .empty-state { text-align: center; color: #777; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'match_list' %}" class="back-link">← Вернуться к списку матчей</a>
+
+    <div class="match-header">
+        <h1>{{ match.title }}</h1>
+        <p style="color: #777;">🗓 {{ match.date|date:"d.m.Y" }} | 🏆 Итоговый счет: <strong>{{ match.my_score }} : {{ match.opponent_score }}</strong></p>
+        {% if match.description %}
+            <p>{{ match.description }}</p>
+        {% endif %}
+    </div>
+   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">+ Добавить видео</a>
+    </div>
+    <h2>Записи игры</h2>
+
+    {% for video in videos %}
+        <div class="video-card">
+            <h3 style="margin-top: 0;">{{ video.title }}</h3>
+            {% if video.description %}
+                <p>{{ video.description }}</p>
+            {% endif %}
+
+            {% if video.video %}
+                <video controls preload="metadata">
+                    <source src="{{ video.video.url }}" type="video/mp4">
+                    Ваш браузер не поддерживает встроенные видео.
+                </video>
+            {% else %}
+                <p>Видеофайл не был загружен.</p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <div class="empty-state">К этому матчу пока не прикреплено ни одного видео. 🎬</div>
+    {% endfor %}
+
+</body>
+</html>
