@@ -60,6 +60,9 @@
         <input type="text" name="username" placeholder="Имя пользователя" required autofocus>
         <input type="password" name="password" placeholder="Пароль" required>
         <button type="submit">Войти</button>
+        <p style="margin-top: 15px; font-size: 0.9em;">
+    Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+</p>
     </form>
 </div>
 

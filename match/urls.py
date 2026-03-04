@@ -6,4 +6,5 @@ urlpatterns = [
     path('add/', views.match_create, name='match_create'),
     path('<int:match_id>/', views.match_detail, name='match_detail'),
     path('<int:match_id>/add_video/', views.video_create, name='video_create'),
+    path('register/', views.register, name='register'),
 ]

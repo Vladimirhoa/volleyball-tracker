@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Match
 from .forms import MatchForm
 from video.forms import VideoForm
+from .forms import RegisterForm
 @login_required
 def match_list(request):
     matches = Match.objects.filter(user=request.user).order_by('-date')
@@ -47,3 +48,14 @@ def video_create(request, match_id):
         form = VideoForm()
 
     return render(request, 'match/video_form.html', {'form': form, 'match': match})
+
+
+def register(request):
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("login")
+    else:
+        form = RegisterForm()
+    return render(request, "registration/register.html", {"form": form})
