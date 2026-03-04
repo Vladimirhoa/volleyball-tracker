@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  volleyball-app:
+    build: .
+    container_name: volley_tracker
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
+      - ./data:/app/data
