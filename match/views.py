@@ -8,8 +8,9 @@ from .models import Match
 from django.views.decorators.http import require_POST
 from video.models import Video
 from .forms import MatchForm
-from video.forms import VideoForm
 from .forms import RegisterForm
+from video.forms import VideoForm
+from video.tasks import process_video_task, download_vk_video_task
 from video.tasks import process_video_task
 @login_required
 def match_list(request):
@@ -44,50 +45,33 @@ def video_create(request, match_id):
     match = get_object_or_404(Match, id=match_id, user=request.user)
 
     if request.method == 'POST':
-        is_chunked = request.POST.get('is_chunked') == 'true'
+        vk_link = request.POST.get('vk_link', '').strip()
 
-        if is_chunked:
-            file_chunk = request.FILES.get('file')
-            file_name = request.POST.get('file_name')
-            chunk_index = int(request.POST.get('chunk_index', 0))
-            total_chunks = int(request.POST.get('total_chunks', 1))
+        # 1. Если пользователь вставил ссылку ВК
+        if vk_link:
+            video = Video.objects.create(
+                user=request.user,
+                match=match,
+                title=request.POST.get('title') or 'Видео из ВК',
+                description=request.POST.get('description', ''),
+                status='processing'
+            )
+            download_vk_video_task.delay(video.id, vk_link)
+            return redirect('match_detail', match_id=match.id)
 
-            # Папка для временных файлов
-            temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
-            os.makedirs(temp_dir, exist_ok=True)
-            temp_file_path = os.path.join(temp_dir, f"{request.user.id}_{file_name}")
-
-            mode = 'ab' if chunk_index > 0 else 'wb'
-            with open(temp_file_path, mode) as f:
-                for chunk in file_chunk.chunks():
-                    f.write(chunk)
-
-            if chunk_index == total_chunks - 1:
-                title = request.POST.get('title', '')
-                description = request.POST.get('description', '')
-
-                video = Video(
-                    user=request.user,
-                    match=match,
-                    title=title,
-                    description=description,
-                )
-                with open(temp_file_path, 'rb') as f:
-                    video.video.save(file_name, File(f), save=True)
-                os.remove(temp_file_path)
-                process_video_task.delay(video.id)
-
-                return JsonResponse({'status': 'success', 'redirect_url': f'/match/{match.id}/'})
-            return JsonResponse({'status': 'uploading', 'chunk': chunk_index})
-
+        # 2. Обычная загрузка файла с компьютера
         else:
             form = VideoForm(request.POST, request.FILES)
             if form.is_valid():
                 new_video = form.save(commit=False)
                 new_video.user = request.user
                 new_video.match = match
+                new_video.status = 'processing'
                 new_video.save()
-                process_video_task.delay(new_video.id)
+
+                if new_video.video:
+                    process_video_task.delay(new_video.id)
+
                 return redirect('match_detail', match_id=match.id)
     else:
         form = VideoForm()
