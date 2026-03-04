@@ -23,4 +23,4 @@ services:
       - ./staticfiles:/app/staticfiles
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - volleyball-app
+      - volleyball_tracker
