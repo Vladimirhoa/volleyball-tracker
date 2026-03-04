@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  volleyball-app:
+  volleyball_tracker:
     build: .
-    container_name: volley_tracker
+    container_name: volleyball_tracker
     restart: unless-stopped
     volumes:
       - ./media:/app/media
