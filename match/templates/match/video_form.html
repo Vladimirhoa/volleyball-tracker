@@ -19,7 +19,7 @@
 
         /* Стили для прогресс-бара */
         #progress-container {
-            display: none; /* Скрыт по умолчанию */
+            display: none;
             width: 100%;
             background-color: #ecf0f1;
             border-radius: 5px;
@@ -83,53 +83,87 @@
     </div>
 
     <script>
-        document.getElementById('upload-form').addEventListener('submit', function(event) {
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
             event.preventDefault(); // Останавливаем стандартную отправку
 
-            let form = this;
-            let formData = new FormData(form);
+            const fileInput = document.querySelector('input[type="file"]');
+            const file = fileInput.files[0];
 
-            let submitBtn = document.getElementById('submit-btn');
-            let progressContainer = document.getElementById('progress-container');
-            let progressBar = document.getElementById('progress-bar');
-            let progressText = document.getElementById('progress-text');
+            // Если файл не выбран, отправляем форму стандартно
+            if (!file) {
+                this.submit();
+                return;
+            }
 
-            // Блокируем кнопку и показываем шкалу
+            const title = document.querySelector('input[name="title"]').value;
+            const description = document.querySelector('textarea[name="description"]').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const submitBtn = document.getElementById('submit-btn');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            // Размер одного чанка - 10 МБ (в байтах)
+            const chunkSize = 10 * 1024 * 1024;
+            const totalChunks = Math.ceil(file.size / chunkSize);
+
+            // Меняем UI
             submitBtn.disabled = true;
             submitBtn.style.backgroundColor = '#95a5a6';
             submitBtn.innerText = 'Идет загрузка...';
             progressContainer.style.display = 'block';
 
-            let xhr = new XMLHttpRequest();
-            xhr.open('POST', window.location.href, true);
+            // Отправляем чанки последовательно
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, end);
 
-            // Отслеживаем прогресс
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    let percentComplete = Math.round((e.loaded / e.total) * 100);
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', csrfToken);
+                formData.append('is_chunked', 'true'); // Флаг для сервера
+                formData.append('file', chunk);
+                formData.append('file_name', file.name);
+                formData.append('chunk_index', i);
+                formData.append('total_chunks', totalChunks);
+                formData.append('title', title);
+                formData.append('description', description);
+
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error('Network response was not ok');
+
+                    const data = await response.json();
+
+                    // Обновляем прогресс-бар
+                    let percentComplete = Math.round(((i + 1) / totalChunks) * 100);
                     progressBar.style.width = percentComplete + '%';
 
                     if (percentComplete > 50) {
                         progressText.style.color = 'white';
                     }
                     progressText.innerText = percentComplete + '%';
-                }
-            });
 
-            // Завершение загрузки
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    window.location.href = xhr.responseURL;
-                } else {
-                    alert('Произошла ошибка при загрузке. Возможно, файл слишком большой.');
+                    // Если сервер ответил, что файл собран и сохранен
+                    if (data.status === 'success') {
+                        window.location.href = data.redirect_url;
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки:', error);
+                    alert('Произошла ошибка при загрузке. Проверьте соединение.');
                     submitBtn.disabled = false;
                     submitBtn.style.backgroundColor = '#27ae60';
                     submitBtn.innerText = 'Сохранить видео';
                     progressContainer.style.display = 'none';
+                    return; // Прерываем загрузку
                 }
-            };
-
-            xhr.send(formData);
+            }
         });
     </script>
 </body>

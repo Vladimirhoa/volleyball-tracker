@@ -80,19 +80,25 @@
 
     <div class="match-list">
         {% for match in matches %}
-            <a href="{% url 'match_detail' match.id %}" style="text-decoration: none; color: inherit;">
-        <div class="match-card">
-            <div class="match-info">
-                <span class="match-title">{{ match.title }}</span>
-                <span class="match-date">{{ match.date|date:"d.m.Y" }}</span>
-            </div>
+           <div class="match-card" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'match_detail' match.id %}" style="text-decoration: none; color: inherit; flex-grow: 1; display: flex; justify-content: space-between; align-items: center; padding-right: 15px;">
+                <div class="match-info">
+                    <span class="match-title">{{ match.title }}</span>
+                    <span class="match-date">{{ match.date|date:"d.m.Y" }}</span>
+                </div>
 
-            <div class="match-score
-                {% if match.my_score > match.opponent_score %}score-win
-                {% elif match.my_score < match.opponent_score %}score-loss
-                {% else %}score-draw{% endif %}">
-                {{ match.my_score }} : {{ match.opponent_score }}
-            </div>
+                <div class="match-score
+                    {% if match.my_score > match.opponent_score %}score-win
+                    {% elif match.my_score < match.opponent_score %}score-loss
+                    {% else %}score-draw{% endif %}">
+                    {{ match.my_score }} : {{ match.opponent_score }}
+                </div>
+            </a>
+
+            <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Удалить этот матч и все связанные видео?');" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.5em; padding: 5px;" title="Удалить матч">🗑</button>
+            </form>
         </div>
         {% empty %}
         <p style="text-align: center; color: #777;">Матчей пока нет. Добавь первую игру через панель администратора!</p>

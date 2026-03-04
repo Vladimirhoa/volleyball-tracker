@@ -27,12 +27,23 @@
     </div>
    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">+ Добавить видео</a>
+
+        <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч и ВСЕ его видео? Действие необратимо.');" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">🗑 Удалить матч</button>
+        </form>
     </div>
     <h2>Записи игры</h2>
 
     {% for video in videos %}
         <div class="video-card">
-            <h3 style="margin-top: 0;">{{ video.title }}</h3>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h3 style="margin-top: 0;">{{ video.title }}</h3>
+                <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2em;" title="Удалить видео">🗑</button>
+                </form>
+            </div>
             {% if video.description %}
                 <p>{{ video.description }}</p>
             {% endif %}
