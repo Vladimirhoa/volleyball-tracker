@@ -10,3 +10,5 @@ services:
     volumes:
       - ./media:/app/media
       - ./data:/app/data
+    environment:
+      - DJANGO_DEBUG=False

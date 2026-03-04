@@ -13,3 +13,5 @@ __pycache__/
 .env
 
 /media/
+
+data/.secret_key
