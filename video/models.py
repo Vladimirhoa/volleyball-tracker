@@ -21,6 +21,7 @@ class Video(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='processing')
+    progress = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = "Видео"

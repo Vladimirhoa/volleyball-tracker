@@ -192,3 +192,11 @@ def custom_admin_dashboard(request):
         })
 
     return render(request, 'match/admin_dashboard.html', {'user_stats': user_stats})
+
+@login_required
+def video_progress(request, video_id):
+    video = get_object_or_404(Video, id=video_id, user=request.user)
+    return JsonResponse({
+        'status': video.status,
+        'progress': video.progress
+    })

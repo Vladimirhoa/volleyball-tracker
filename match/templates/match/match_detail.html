@@ -175,10 +175,46 @@
             {% endif %}
 
             {% if video.status == 'processing' %}
-                <div class="status-info">
-                    ⏳ Видео обрабатывается... <br>
-                    <span style="font-size: 0.85em; font-weight: normal;">Обновите страницу через пару минут.</span>
+                <div class="status-info" id="video-processing-{{ video.id }}">
+                    ⏳ Видео скачивается и обрабатывается... <br>
+
+                    <div style="width: 100%; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px; overflow: hidden; height: 12px;">
+                        <div id="progress-bar-{{ video.id }}" style="width: {{ video.progress|default:0 }}%; background-color: #3498db; height: 100%; transition: width 0.4s ease;"></div>
+                    </div>
+
+                    <span id="progress-text-{{ video.id }}" style="font-size: 0.85em; font-weight: normal; display: inline-block; margin-top: 5px;">
+                        Прогресс: {{ video.progress|default:0 }}%
+                    </span>
                 </div>
+
+                <script>
+                    (function() {
+                        const videoId = {{ video.id }};
+                        const progressBar = document.getElementById(`progress-bar-${videoId}`);
+                        const progressText = document.getElementById(`progress-text-${videoId}`);
+
+                        const interval = setInterval(() => {
+                            fetch(`/video/${videoId}/progress/`)
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.status === 'ready') {
+                                        clearInterval(interval);
+                                        window.location.reload(); // Перезагружаем, чтобы показать готовый плеер
+                                    } else if (data.status === 'error') {
+                                        clearInterval(interval);
+                                        progressText.innerText = '❌ Ошибка при обработке видео.';
+                                        progressText.style.color = '#e74c3c';
+                                        progressBar.style.backgroundColor = '#e74c3c';
+                                    } else {
+                                        progressBar.style.width = data.progress + '%';
+                                        progressText.innerText = 'Прогресс: ' + data.progress + '%';
+                                    }
+                                })
+                                .catch(err => console.error(err));
+                        }, 2000); // Опрашиваем каждые 2 секунды
+                    })();
+                </script>
+
             {% elif video.status == 'error' %}
                 <div class="status-error">
                     ❌ Ошибка при обработке видео.

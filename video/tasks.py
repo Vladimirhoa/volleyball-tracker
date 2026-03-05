@@ -8,6 +8,7 @@ from django.core.files import File
 import time
 from celery import shared_task
 from django.conf import settings
+import re
 
 @shared_task
 def process_video_task(video_id):
@@ -45,27 +46,48 @@ def process_video_task(video_id):
 def download_vk_video_task(video_id, vk_link):
     try:
         video = Video.objects.get(id=video_id)
-
         temp_filename = f"/app/media/temp_vk_{uuid.uuid4()}.mp4"
 
-        # Настройки: качаем видео 720p (или ниже) и собираем в mp4
+        # Храним прогресс в списке, чтобы иметь к нему доступ из внутренней функции
+        last_progress = [0]
+
+        def progress_hook(d):
+            if d['status'] == 'downloading':
+                # yt-dlp отдает строку типа "  1.2%", иногда с ANSI-цветами. Очищаем ее.
+                percent_str = d.get('_percent_str', '0%').replace('%', '')
+                percent_clean = re.sub(r'\x1b\[[0-9;]*m', '', percent_str).strip()
+
+                try:
+                    percent = int(float(percent_clean))
+                    # Обновляем БД с шагом в 5%
+                    if percent - last_progress[0] >= 5 or percent == 100:
+                        video.progress = percent
+                        video.save(update_fields=['progress'])
+                        last_progress[0] = percent
+                except ValueError:
+                    pass
+
         ydl_opts = {
             'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]',
             'outtmpl': temp_filename,
             'merge_output_format': 'mp4',
+            'progress_hooks': [progress_hook],  # <--- ПОДКЛЮЧАЕМ ХУК
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([vk_link])
+
         with open(temp_filename, 'rb') as f:
             video.video.save(f"vk_video_{video_id}.mp4", File(f), save=True)
+
         os.remove(temp_filename)
         video.status = 'ready'
-        video.save()
+        video.progress = 100
+        video.save(update_fields=['status', 'progress'])
 
     except Exception as e:
         video.status = 'error'
-        video.save()
+        video.save(update_fields=['status'])
         print(f"Ошибка скачивания с ВК для видео {video_id}: {e}")
 
 
