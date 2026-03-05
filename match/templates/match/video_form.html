@@ -5,44 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузить видео</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; }
+        /* 1. ПЕРЕМЕННЫЕ ТЕМЫ */
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --heading-color: #2c3e50;
+            --secondary-text: #7f8c8d;
+            --input-bg: #ffffff;
+            --input-border: #cccccc;
+            --file-box-bg: #f8f9fa;
+            --progress-bg: #ecf0f1;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #18191a;
+            --card-bg: #242526;
+            --text-color: #e4e6eb;
+            --heading-color: #f5f6f7;
+            --secondary-text: #b0b3b8;
+            --input-bg: #3a3b3c;
+            --input-border: #4e4f50;
+            --file-box-bg: #2d2e2f;
+            --progress-bg: #3a3b3c;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        /* 2. ОБЩИЕ СТИЛИ */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
         .back-link:hover { text-decoration: underline; }
-        .form-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        .form-card {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        h2 { color: var(--heading-color); margin-top: 0; }
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
         label { font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-family: inherit; }
+
+        /* Поля ввода */
+        input[type="text"], input[type="url"], textarea {
+            padding: 10px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+        }
         textarea { resize: vertical; min-height: 100px; }
-        .file-upload-box { background: #f8f9fa; border: 2px dashed #bdc3c7; padding: 20px; text-align: center; border-radius: 5px; margin-top: 5px; }
-        button { background-color: #27ae60; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 15px; font-weight: bold; }
+
+        /* Зона загрузки файла */
+        .file-upload-box {
+            background-color: var(--file-box-bg);
+            border: 2px dashed var(--input-border);
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
         button:hover { background-color: #2ecc71; }
 
-        /* Стили для прогресс-бара */
+        /* Прогресс-бар */
         #progress-container {
             display: none;
             width: 100%;
-            background-color: #ecf0f1;
+            background-color: var(--progress-bg);
             border-radius: 5px;
             margin-top: 15px;
             overflow: hidden;
             position: relative;
         }
-        #progress-bar {
-            height: 20px;
-            width: 0%;
-            background-color: #3498db;
-            transition: width 0.2s;
-        }
+        #progress-bar { height: 20px; width: 0%; background-color: #3498db; transition: width 0.2s; }
         #progress-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            top: 0;
+            position: absolute; width: 100%; text-align: center; top: 0; left: 0;
+            font-size: 12px; font-weight: bold; color: var(--text-color); line-height: 20px;
+        }
+
+        /* 3. КОНФИГУРАЦИЯ ПОЛЗУНКА ТЕМЫ */
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 28px;
+            position: relative;
+            width: 54px;
+        }
+
+        .theme-switch input { display: none; }
+
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
             left: 0;
-            font-size: 12px;
-            font-weight: bold;
-            color: #2c3e50;
-            line-height: 20px;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px;
+        }
+
+        .slider .icon { font-size: 14px; user-select: none; }
+
+        .slider:before {
+            background-color: white; /* Цвет кружка в светлой теме */
+            bottom: 4px;
+            content: "";
+            height: 20px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 20px;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Состояние "Включено" (Темная тема) */
+        input:checked + .slider {
+            background-color: #2c3e50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            background-color: #1a1a1a; /* ТЕМНЫЙ ЦВЕТ ПОЛЗУНКА */
         }
     </style>
 </head>
@@ -57,7 +182,7 @@
             {% csrf_token %}
 
             <div class="form-group">
-                <label>Название видео (например, "1 партия" или "Хорошая атака"):</label>
+                <label>Название видео:</label>
                 {{ form.title }}
             </div>
 
@@ -72,12 +197,14 @@
                     {{ form.video }}
                 </div>
             </div>
-            <div style="text-align: center; margin: 15px 0; font-weight: bold; color: #7f8c8d;">— ИЛИ —</div>
+
+            <div style="text-align: center; margin: 15px 0; font-weight: bold; color: var(--secondary-text);">— ИЛИ —</div>
 
             <div class="form-group">
                 <label>Ссылка на трансляцию ВК:</label>
-                <input type="url" name="vk_link" placeholder="https://vk.com/video-..." style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <input type="url" name="vk_link" placeholder="https://vk.com/video-...">
             </div>
+
             <div id="progress-container">
                 <div id="progress-bar"></div>
                 <div id="progress-text">0%</div>
@@ -87,14 +214,40 @@
         </form>
     </div>
 
-    <script>
-        document.getElementById('upload-form').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Останавливаем стандартную отправку
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider">
+                <span class="icon">☀️</span>
+                <span class="icon">🌙</span>
+            </div>
+        </label>
+    </div>
 
+    <script>
+        // ЛОГИКА ТЕМЫ
+        const toggleSwitch = document.querySelector('#checkbox');
+        const htmlElement = document.documentElement;
+
+        function switchTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            toggleSwitch.checked = (theme === 'dark');
+        }
+
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        switchTheme(currentTheme);
+
+        toggleSwitch.addEventListener('change', (e) => {
+            switchTheme(e.target.checked ? 'dark' : 'light');
+        });
+
+        // ЛОГИКА ЗАГРУЗКИ (Chunked Upload)
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
             const fileInput = document.querySelector('input[type="file"]');
             const file = fileInput.files[0];
 
-            // Если файл не выбран, отправляем форму стандартно
             if (!file) {
                 this.submit();
                 return;
@@ -109,17 +262,14 @@
             const progressBar = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');
 
-            // Размер одного чанка - 10 МБ (в байтах)
             const chunkSize = 10 * 1024 * 1024;
             const totalChunks = Math.ceil(file.size / chunkSize);
 
-            // Меняем UI
             submitBtn.disabled = true;
             submitBtn.style.backgroundColor = '#95a5a6';
             submitBtn.innerText = 'Идет загрузка...';
             progressContainer.style.display = 'block';
 
-            // Отправляем чанки последовательно
             for (let i = 0; i < totalChunks; i++) {
                 const start = i * chunkSize;
                 const end = Math.min(start + chunkSize, file.size);
@@ -127,7 +277,7 @@
 
                 const formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrfToken);
-                formData.append('is_chunked', 'true'); // Флаг для сервера
+                formData.append('is_chunked', 'true');
                 formData.append('file', chunk);
                 formData.append('file_name', file.name);
                 formData.append('chunk_index', i);
@@ -140,33 +290,24 @@
                         method: 'POST',
                         body: formData
                     });
-
-                    if (!response.ok) throw new Error('Network response was not ok');
+                    if (!response.ok) throw new Error('Ошибка сети');
 
                     const data = await response.json();
-
-                    // Обновляем прогресс-бар
                     let percentComplete = Math.round(((i + 1) / totalChunks) * 100);
                     progressBar.style.width = percentComplete + '%';
-
-                    if (percentComplete > 50) {
-                        progressText.style.color = 'white';
-                    }
                     progressText.innerText = percentComplete + '%';
 
-                    // Если сервер ответил, что файл собран и сохранен
                     if (data.status === 'success') {
                         window.location.href = data.redirect_url;
                         return;
                     }
                 } catch (error) {
-                    console.error('Ошибка загрузки:', error);
-                    alert('Произошла ошибка при загрузке. Проверьте соединение.');
+                    alert('Ошибка при загрузке. Проверьте соединение.');
                     submitBtn.disabled = false;
                     submitBtn.style.backgroundColor = '#27ae60';
                     submitBtn.innerText = 'Сохранить видео';
                     progressContainer.style.display = 'none';
-                    return; // Прерываем загрузку
+                    return;
                 }
             }
         });

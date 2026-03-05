@@ -5,13 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ match.title }}</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
+        /* 1. ПЕРЕМЕННЫЕ ТЕМЫ */
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --heading-color: #2c3e50;
+            --secondary-text: #777777;
+            --border-color: #eeeeee;
+            --shadow: rgba(0,0,0,0.05);
+            /* Цвета для статусов */
+            --alert-info-bg: #e8f6f3;
+            --alert-info-text: #16a085;
+            --alert-error-bg: #fdedec;
+            --alert-error-text: #c0392b;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #18191a;
+            --card-bg: #242526;
+            --text-color: #e4e6eb;
+            --heading-color: #f5f6f7;
+            --secondary-text: #b0b3b8;
+            --border-color: #3a3b3c;
+            --shadow: rgba(0,0,0,0.3);
+            /* Темные версии статусов */
+            --alert-info-bg: #1c2e2a;
+            --alert-info-text: #2ecc71;
+            --alert-error-bg: #2c1a1a;
+            --alert-error-text: #e74c3c;
+        }
+
+        /* 2. ОБЩИЕ СТИЛИ */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
         .back-link:hover { text-decoration: underline; }
-        .match-header { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .video-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        video { width: 100%; border-radius: 8px; margin-top: 15px; outline: none; }
-        .empty-state { text-align: center; color: #777; padding: 20px; }
+
+        .match-header, .video-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px var(--shadow);
+            margin-bottom: 25px;
+        }
+
+        h1, h2, h3 { color: var(--heading-color); }
+
+        .status-info {
+            background-color: var(--alert-info-bg);
+            color: var(--alert-info-text);
+            padding: 20px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px;
+        }
+
+        .status-error {
+            background-color: var(--alert-error-bg);
+            color: var(--alert-error-text);
+            padding: 20px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px;
+        }
+
+        video { width: 100%; border-radius: 8px; margin-top: 15px; outline: none; background: #000; }
+        .empty-state { text-align: center; color: var(--secondary-text); padding: 20px; }
+
+        /* 3. КОНФИГУРАЦИЯ ПОЛЗУНКА ТЕМЫ */
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 28px;
+            position: relative;
+            width: 54px;
+        }
+
+        .theme-switch input { display: none; }
+
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px;
+        }
+
+        .slider .icon { font-size: 14px; user-select: none; }
+
+        .slider:before {
+            background-color: white; /* Цвет кружка в светлой теме */
+            bottom: 4px;
+            content: "";
+            height: 20px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 20px;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Состояние "Включено" (Темная тема) */
+        input:checked + .slider {
+            background-color: #2c3e50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            background-color: #1a1a1a; /* ТЕМНЫЙ ЦВЕТ ПОЛЗУНКА */
+        }
     </style>
 </head>
 <body>
@@ -20,60 +143,87 @@
 
     <div class="match-header">
         <h1>{{ match.title }}</h1>
-        <p style="color: #777;">🗓 {{ match.date|date:"d.m.Y" }} | 🏆 Итоговый счет: <strong>{{ match.my_score }} : {{ match.opponent_score }}</strong></p>
+        <p style="color: var(--secondary-text);">🗓 {{ match.date|date:"d.m.Y" }} | 🏆 Итоговый счет: <strong>{{ match.my_score }} : {{ match.opponent_score }}</strong></p>
         {% if match.description %}
             <p>{{ match.description }}</p>
         {% endif %}
     </div>
-   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">+ Добавить видео</a>
 
-        <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч и ВСЕ его видео? Действие необратимо.');" style="margin: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">+ Добавить видео</a>
+
+        <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');">
             {% csrf_token %}
-            <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">🗑 Удалить матч</button>
+            <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🗑 Удалить матч</button>
         </form>
     </div>
+
     <h2>Записи игры</h2>
 
     {% for video in videos %}
         <div class="video-card">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <h3 style="margin-top: 0;">{{ video.title }}</h3>
-                <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');" style="margin: 0;">
+                <h3 style="margin: 0;">{{ video.title }}</h3>
+                <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');">
                     {% csrf_token %}
-                    <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2em;" title="Удалить видео">🗑</button>
+                    <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2em;">🗑</button>
                 </form>
             </div>
 
             {% if video.description %}
-                <p>{{ video.description }}</p>
+                <p style="margin-top: 10px;">{{ video.description }}</p>
             {% endif %}
 
             {% if video.status == 'processing' %}
-                <div style="background: #e8f6f3; padding: 20px; border-radius: 8px; text-align: center; color: #16a085; font-weight: bold; margin-top: 15px;">
-                    ⏳ Видео скачивается или обрабатывается на сервере... <br>
-                    <span style="font-size: 0.85em; font-weight: normal;">Обычно это занимает пару минут. Просто обновите страницу чуть позже.</span>
+                <div class="status-info">
+                    ⏳ Видео обрабатывается... <br>
+                    <span style="font-size: 0.85em; font-weight: normal;">Обновите страницу через пару минут.</span>
                 </div>
             {% elif video.status == 'error' %}
-                <div style="background: #fdedec; padding: 20px; border-radius: 8px; text-align: center; color: #c0392b; font-weight: bold; margin-top: 15px;">
-                    ❌ Произошла ошибка при скачивании или обработке. Проверьте ссылку.
+                <div class="status-error">
+                    ❌ Ошибка при обработке видео.
                 </div>
-           {% elif video.video %}
+            {% elif video.video %}
                 <video controls preload="metadata">
                     <source src="{{ video.video.url }}" type="video/mp4">
-                    Ваш браузер не поддерживает встроенные видео.
                 </video>
                 {% if video.file_size %}
-                    <div style="text-align: right; color: #7f8c8d; font-size: 0.85em; margin-top: 5px;">
-                        💾 Размер: <strong>{{ video.file_size|filesizeformat }}</strong>
+                    <div style="text-align: right; color: var(--secondary-text); font-size: 0.85em; margin-top: 5px;">
+                        💾 {{ video.file_size|filesizeformat }}
                     </div>
                 {% endif %}
-            {% else %}
-                <p style="color: #7f8c8d; font-style: italic; margin-top: 15px;">Видеофайл отсутствует.</p>
-            {% endif %} </div>
+            {% endif %}
+        </div>
     {% empty %}
-        <div class="empty-state">К этому матчу пока не прикреплено ни одного видео. 🎬</div>
+        <div class="empty-state">🎬 Видео пока нет.</div>
     {% endfor %}
 
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider">
+                <span class="icon">☀️</span>
+                <span class="icon">🌙</span>
+            </div>
+        </label>
+    </div>
+
+    <script>
+        const toggleSwitch = document.querySelector('#checkbox');
+        const htmlElement = document.documentElement;
+
+        function switchTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            toggleSwitch.checked = (theme === 'dark');
+        }
+
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        switchTheme(currentTheme);
+
+        toggleSwitch.addEventListener('change', (e) => {
+            switchTheme(e.target.checked ? 'dark' : 'light');
+        });
+    </script>
 </body>
 </html>
