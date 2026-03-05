@@ -4,6 +4,7 @@ import uuid
 import yt_dlp
 from celery import shared_task
 from .models import Video
+from django.core.files import File
 
 
 @shared_task
