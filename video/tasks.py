@@ -5,7 +5,9 @@ import yt_dlp
 from celery import shared_task
 from .models import Video
 from django.core.files import File
-
+import time
+from celery import shared_task
+from django.conf import settings
 
 @shared_task
 def process_video_task(video_id):
@@ -65,3 +67,41 @@ def download_vk_video_task(video_id, vk_link):
         video.status = 'error'
         video.save()
         print(f"Ошибка скачивания с ВК для видео {video_id}: {e}")
+
+
+@shared_task
+def cleanup_temp_files_task():
+    age_in_seconds = 24 * 60 * 60
+    current_time = time.time()
+
+    deleted_count = 0
+
+    temp_uploads_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
+    if os.path.exists(temp_uploads_dir):
+        for filename in os.listdir(temp_uploads_dir):
+            filepath = os.path.join(temp_uploads_dir, filename)
+            if os.path.isfile(filepath):
+                file_age = current_time - os.path.getmtime(filepath)
+                if file_age > age_in_seconds:
+                    try:
+                        os.remove(filepath)
+                        deleted_count += 1
+                        print(f"Удален старый чанк: {filename}")
+                    except Exception as e:
+                        print(f"Ошибка удаления {filename}: {e}")
+
+    if os.path.exists(settings.MEDIA_ROOT):
+        for filename in os.listdir(settings.MEDIA_ROOT):
+            if filename.startswith('temp_vk_') and filename.endswith('.mp4'):
+                filepath = os.path.join(settings.MEDIA_ROOT, filename)
+                if os.path.isfile(filepath):
+                    file_age = current_time - os.path.getmtime(filepath)
+                    if file_age > age_in_seconds:
+                        try:
+                            os.remove(filepath)
+                            deleted_count += 1
+                            print(f"Удален старый файл ВК: {filename}")
+                        except Exception as e:
+                            print(f"Ошибка удаления {filename}: {e}")
+
+    return f"Очистка завершена. Удалено файлов: {deleted_count}"
