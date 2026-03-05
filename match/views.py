@@ -12,6 +12,7 @@ from .forms import RegisterForm
 from video.forms import VideoForm
 from video.tasks import process_video_task, download_vk_video_task
 from video.tasks import process_video_task
+from django.urls import reverse
 @login_required
 def match_list(request):
     matches = Match.objects.filter(user=request.user).order_by('-date')
@@ -45,9 +46,47 @@ def video_create(request, match_id):
     match = get_object_or_404(Match, id=match_id, user=request.user)
 
     if request.method == 'POST':
-        vk_link = request.POST.get('vk_link', '').strip()
+        if request.POST.get('is_chunked') == 'true':
+            chunk = request.FILES.get('file')
+            file_name = request.POST.get('file_name')
+            chunk_index = int(request.POST.get('chunk_index', 0))
+            total_chunks = int(request.POST.get('total_chunks', 1))
+            title = request.POST.get('title', '')
+            description = request.POST.get('description', '')
 
-        # 1. Если пользователь вставил ссылку ВК
+            temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
+            os.makedirs(temp_dir, exist_ok=True)
+            temp_file_path = os.path.join(temp_dir, f"user_{request.user.id}_{file_name}")
+
+            mode = 'ab' if chunk_index > 0 else 'wb'
+            with open(temp_file_path, mode) as f:
+                for chunk_data in chunk.chunks():
+                    f.write(chunk_data)
+
+            if chunk_index == total_chunks - 1:
+                with open(temp_file_path, 'rb') as f:
+                    video = Video(
+                        user=request.user,
+                        match=match,
+                        title=title or file_name, # Если название не указали, берем имя файла
+                        description=description,
+                        status='processing'
+                    )
+                    video.video.save(file_name, File(f), save=False)
+                    video.save()
+
+                os.remove(temp_file_path)
+
+                process_video_task.delay(video.id)
+
+                return JsonResponse({
+                    'status': 'success',
+                    'redirect_url': reverse('match_detail', args=[match.id])
+                })
+
+            return JsonResponse({'status': 'uploading'})
+
+        vk_link = request.POST.get('vk_link', '').strip()
         if vk_link:
             video = Video.objects.create(
                 user=request.user,
@@ -58,8 +97,6 @@ def video_create(request, match_id):
             )
             download_vk_video_task.delay(video.id, vk_link)
             return redirect('match_detail', match_id=match.id)
-
-        # 2. Обычная загрузка файла с компьютера
         else:
             form = VideoForm(request.POST, request.FILES)
             if form.is_valid():
