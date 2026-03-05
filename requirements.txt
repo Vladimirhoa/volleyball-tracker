@@ -3,3 +3,4 @@ gunicorn
 celery
 redis
 yt-dlp
+psycopg2-binary>=2.9.9
