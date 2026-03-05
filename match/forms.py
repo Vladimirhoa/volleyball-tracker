@@ -9,7 +9,7 @@ class MatchForm(forms.ModelForm):
         model = Match
         fields = ['title', 'description', 'my_score', 'opponent_score', 'date']
         widgets = {
-            'date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }
 
 class RegisterForm(UserCreationForm):

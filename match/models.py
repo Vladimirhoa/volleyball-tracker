@@ -6,7 +6,7 @@ class Match(models.Model):
     description = models.TextField(blank=True)
     my_score = models.IntegerField(default=0)
     opponent_score = models.IntegerField(default=0)
-    date = models.DateTimeField()
+    date = models.DateField()
     class Meta:
         verbose_name = "Матч"
         verbose_name_plural = "Матчи"
