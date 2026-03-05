@@ -7,9 +7,9 @@ services:
     container_name: volley_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: volley_db
-      POSTGRES_USER: volley_user
-      POSTGRES_PASSWORD: volley_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
