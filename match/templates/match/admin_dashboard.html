@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления пользователями</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; max-width: 900px; margin: 0 auto; padding: 20px; color: #333; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+        .dashboard-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background-color: #f8f9fa; font-weight: bold; color: #2c3e50; }
+        .btn { padding: 8px 15px; text-decoration: none; border-radius: 5px; color: white; font-weight: bold; display: inline-block; }
+        .btn-add { background-color: #27ae60; margin-bottom: 15px; }
+        .btn-edit { background-color: #f39c12; font-size: 0.85em; padding: 6px 12px; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'match_list' %}" class="back-link">← Вернуться к матчам</a>
+
+    <div class="dashboard-card">
+        <h1>Статистика пользователей</h1>
+
+        <a href="/bobik-sdoh/auth/user/add/" class="btn btn-add">+ Добавить пользователя</a>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Логин</th>
+                    <th>Email</th>
+                    <th>Загружено видео</th>
+                    <th>Занято памяти</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in user_stats %}
+                <tr>
+                    <td>
+                        <strong>{{ stat.user.username }}</strong>
+                        {% if stat.user.is_superuser %}<span style="color: #e74c3c; font-size: 0.8em;">(Админ)</span>{% endif %}
+                    </td>
+                    <td>{{ stat.user.email|default:"-" }}</td>
+                    <td>{{ stat.video_count }} шт.</td>
+                    <td><strong>{{ stat.total_size|filesizeformat }}</strong></td>
+                    <td>
+                        <a href="/bobik-sdoh/auth/user/{{ stat.user.id }}/change/" class="btn btn-edit">Настроить / Сменить пароль</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
