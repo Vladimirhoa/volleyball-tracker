@@ -65,15 +65,28 @@
     </style>
 </head>
 <body>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 10px 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-        <span>Привет, <strong>{{ user.username }}</strong>! 👋</span>
+<div style="background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span><strong>{{ user.username }}</strong> </span>
         <form method="post" action="{% url 'logout' %}" style="margin: 0;">
             {% csrf_token %}
             <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Выйти</button>
         </form>
     </div>
 
-    <h1>🏐 Дневник матчей</h1>
+    <div style="margin-top: 10px; font-size: 0.9em; color: #555;">
+        Ваши видео занимают: <strong>{{ user_total_size|filesizeformat }}</strong>
+    </div>
+
+    {% if user.is_superuser %}
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 0.85em; color: #7f8c8d;">
+            Всего видео на сервере: <strong>{{ total_server_size|filesizeformat }}</strong><br>
+            Свободного места на диске: <strong>{{ free_disk_space|filesizeformat }}</strong>
+        </div>
+    {% endif %}
+</div>
+
+    <h1> Дневник матчей</h1>
 <div style="text-align: center; margin-bottom: 30px;">
         <a href="{% url 'match_create' %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">+ Добавить матч</a>
     </div>

@@ -13,10 +13,27 @@ from video.forms import VideoForm
 from video.tasks import process_video_task, download_vk_video_task
 from video.tasks import process_video_task
 from django.urls import reverse
+import shutil
 @login_required
 def match_list(request):
     matches = Match.objects.filter(user=request.user).order_by('-date')
-    return render(request, 'match/match_list.html', {'matches': matches})
+    user_videos = Video.objects.filter(user=request.user)
+    user_total_size = sum(v.file_size for v in user_videos if v.file_size) or 0
+
+    context = {
+        'matches': matches,
+        'user_total_size': user_total_size,
+    }
+
+    if request.user.is_superuser:
+        all_videos = Video.objects.all()
+        total_server_size = sum(v.file_size for v in all_videos if v.file_size) or 0
+        total, used, free = shutil.disk_usage(settings.MEDIA_ROOT)
+
+        context['total_server_size'] = total_server_size
+        context['free_disk_space'] = free
+
+    return render(request, 'match/match_list.html', context)
 
 
 @login_required
