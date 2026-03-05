@@ -58,15 +58,19 @@
                 <div style="background: #fdedec; padding: 20px; border-radius: 8px; text-align: center; color: #c0392b; font-weight: bold; margin-top: 15px;">
                     ❌ Произошла ошибка при скачивании или обработке. Проверьте ссылку.
                 </div>
-            {% elif video.video %}
+           {% elif video.video %}
                 <video controls preload="metadata">
                     <source src="{{ video.video.url }}" type="video/mp4">
                     Ваш браузер не поддерживает встроенные видео.
                 </video>
+                {% if video.file_size %}
+                    <div style="text-align: right; color: #7f8c8d; font-size: 0.85em; margin-top: 5px;">
+                        💾 Размер: <strong>{{ video.file_size|filesizeformat }}</strong>
+                    </div>
+                {% endif %}
             {% else %}
                 <p style="color: #7f8c8d; font-style: italic; margin-top: 15px;">Видеофайл отсутствует.</p>
-            {% endif %}
-            </div>
+            {% endif %} </div>
     {% empty %}
         <div class="empty-state">К этому матчу пока не прикреплено ни одного видео. 🎬</div>
     {% endfor %}

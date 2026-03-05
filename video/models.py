@@ -24,3 +24,12 @@ class Video(models.Model):
 
     def __str__(self):
         return f"{self.title} (Матч:{self.match})"
+
+    @property
+    def file_size(self):
+        try:
+            if self.video and hasattr(self.video, 'size'):
+                return self.video.size
+        except Exception:
+            pass
+        return None
