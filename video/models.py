@@ -1,7 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from match.models import Match
+from datetime import datetime
 
+def user_directory_path(instance, filename):
+    now = datetime.now()
+    return f"videos/user_{instance.user.id}/{now.strftime('%Y/%m/%d')}/{filename}"
 
 class Video(models.Model):
     STATUS_CHOICES = [
