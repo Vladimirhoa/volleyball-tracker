@@ -14,6 +14,8 @@ from video.tasks import process_video_task, download_vk_video_task
 from video.tasks import process_video_task
 from django.urls import reverse
 import shutil
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
 @login_required
 def match_list(request):
     matches = Match.objects.filter(user=request.user).order_by('-date')
@@ -171,3 +173,22 @@ def video_delete(request, video_id):
     if match_id:
         return redirect('match_detail', match_id=match_id)
     return redirect('match_list')
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def custom_admin_dashboard(request):
+    users = User.objects.all()
+    user_stats = []
+
+    for user in users:
+        videos = Video.objects.filter(user=user)
+        video_count = videos.count()
+        total_size = sum(v.file_size for v in videos if v.file_size) or 0
+
+        user_stats.append({
+            'user': user,
+            'video_count': video_count,
+            'total_size': total_size
+        })
+
+    return render(request, 'match/admin_dashboard.html', {'user_stats': user_stats})

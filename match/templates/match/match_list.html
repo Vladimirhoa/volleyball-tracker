@@ -83,6 +83,10 @@
             Всего видео на сервере: <strong>{{ total_server_size|filesizeformat }}</strong><br>
             Свободного места на диске: <strong>{{ free_disk_space|filesizeformat }}</strong>
         </div>
+        <div style="margin-top: 15px;">
+                <a href="{% url 'custom_admin_dashboard' %}" style="background-color: #8e44ad; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;"> Управление пользователями</a>
+            </div>
+        </div>
     {% endif %}
 </div>
 
