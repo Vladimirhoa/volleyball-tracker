@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ video.title }}</title>
+    </head>
+<body>
+    <div class="video-card" style="max-width: 800px; margin: 40px auto;">
+        <h2>{{ video.title }}</h2>
+        {% if video.description %}
+            <p>{{ video.description }}</p>
+        {% endif %}
+
+        <video controls preload="metadata" style="width: 100%; border-radius: 8px;">
+            <source src="{{ video.video.url }}" type="video/mp4">
+        </video>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <p style="color: var(--secondary-text); font-size: 0.9em;">
+                Из матча: <strong>{{ video.match.title }}</strong> ({{ video.match.date|date:"d.m.Y" }})
+            </p>
+        </div>
+    </div>
+</body>
+</html>

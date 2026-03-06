@@ -152,11 +152,18 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">+ Добавить видео</a>
 
-        <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');">
-            {% csrf_token %}
-            <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🗑 Удалить матч</button>
-        </form>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')" style="background-color: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                🔗 Поделиться матчем
+            </button>
+
+            <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🗑 Удалить матч</button>
+            </form>
+        </div>
     </div>
+
 
     <h2>Записи игры</h2>
 
@@ -223,6 +230,13 @@
                 <video controls preload="metadata">
                     <source src="{{ video.video.url }}" type="video/mp4">
                 </video>
+
+                {% if video.status == 'ready' %}
+                <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_video' video.share_token %}')" style="background: none; border: 1px solid #3498db; color: #3498db; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em; margin-top: 10px;">
+                    🔗 Копировать ссылку на видео
+                </button>
+                {% endif %}
+
                 {% if video.file_size %}
                     <div style="text-align: right; color: var(--secondary-text); font-size: 0.85em; margin-top: 5px;">
                         💾 {{ video.file_size|filesizeformat }}
@@ -245,6 +259,7 @@
     </div>
 
     <script>
+        // Переключение тем
         const toggleSwitch = document.querySelector('#checkbox');
         const htmlElement = document.documentElement;
 
@@ -260,6 +275,15 @@
         toggleSwitch.addEventListener('change', (e) => {
             switchTheme(e.target.checked ? 'dark' : 'light');
         });
+
+        // Функция копирования в буфер обмена
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Ссылка скопирована в буфер обмена!');
+            }, function(err) {
+                alert('Не удалось скопировать ссылку: ', err);
+            });
+        }
     </script>
 </body>
 </html>

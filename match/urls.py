@@ -11,4 +11,6 @@ urlpatterns = [
     path('video/<int:video_id>/progress/', views.video_progress, name='video_progress'),
     path('register/', views.register, name='register'),
     path('dashboard/', views.custom_admin_dashboard, name='custom_admin_dashboard'),
+    path('shared/match/<uuid:share_token>/', views.public_match_view, name='public_match'),
+    path('shared/video/<uuid:share_token>/', views.public_video_view, name='public_video'),
 ]

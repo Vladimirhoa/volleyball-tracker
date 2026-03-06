@@ -200,3 +200,14 @@ def video_progress(request, video_id):
         'status': video.status,
         'progress': video.progress
     })
+
+def public_match_view(request, share_token):
+    # Ищем матч по уникальному токену
+    match = get_object_or_404(Match, share_token=share_token)
+    videos = match.videos.filter(status='ready') # Показываем только готовые видео
+    return render(request, 'match/public_match.html', {'match': match, 'videos': videos})
+
+def public_video_view(request, share_token):
+    # Ищем видео по уникальному токену
+    video = get_object_or_404(Video, share_token=share_token)
+    return render(request, 'match/public_video.html', {'video': video})

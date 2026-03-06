@@ -72,7 +72,7 @@ def process_video_task(video_id):
 def download_vk_video_task(video_id, vk_link):
     try:
         video = Video.objects.get(id=video_id)
-        temp_filename = f"/app/media/temp_vk_{uuid.uuid4()}.mp4"
+        temp_filename = f"/app/media/temp_web_{uuid.uuid4()}.mp4"
 
         # Храним прогресс в списке, чтобы иметь к нему доступ из внутренней функции
         last_progress = [0]
@@ -104,7 +104,7 @@ def download_vk_video_task(video_id, vk_link):
             ydl.download([vk_link])
 
         with open(temp_filename, 'rb') as f:
-            video.video.save(f"vk_video_{video_id}.mp4", File(f), save=True)
+            video.video.save(f"web_video_{video_id}.mp4", File(f), save=True)
 
         os.remove(temp_filename)
         video.status = 'ready'
@@ -114,7 +114,7 @@ def download_vk_video_task(video_id, vk_link):
     except Exception as e:
         video.status = 'error'
         video.save(update_fields=['status'])
-        print(f"Ошибка скачивания с ВК для видео {video_id}: {e}")
+        print(f"Ошибка скачивания для видео {video_id}: {e}")
 
 
 @shared_task
@@ -140,7 +140,7 @@ def cleanup_temp_files_task():
 
     if os.path.exists(settings.MEDIA_ROOT):
         for filename in os.listdir(settings.MEDIA_ROOT):
-            if filename.startswith('temp_vk_') and filename.endswith('.mp4'):
+            if filename.startswith('temp_web_') and filename.endswith('.mp4'):
                 filepath = os.path.join(settings.MEDIA_ROOT, filename)
                 if os.path.isfile(filepath):
                     file_age = current_time - os.path.getmtime(filepath)
@@ -148,7 +148,7 @@ def cleanup_temp_files_task():
                         try:
                             os.remove(filepath)
                             deleted_count += 1
-                            print(f"Удален старый файл ВК: {filename}")
+                            print(f"Удален старый скачанный файл: {filename}")
                         except Exception as e:
                             print(f"Ошибка удаления {filename}: {e}")
 
