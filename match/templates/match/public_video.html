@@ -4,21 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ video.title }}</title>
-    </head>
+    <style>
+        :root {
+            --bg-color: #f4f4f9; --card-bg: #ffffff; --text-color: #333333;
+            --heading-color: #2c3e50; --secondary-text: #777777; --shadow: rgba(0,0,0,0.05);
+        }
+        [data-theme="dark"] {
+            --bg-color: #18191a; --card-bg: #242526; --text-color: #e4e6eb;
+            --heading-color: #f5f6f7; --secondary-text: #b0b3b8; --shadow: rgba(0,0,0,0.3);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            padding: 20px; transition: background-color 0.3s, color 0.3s;
+        }
+        .video-card {
+            background-color: var(--card-bg); padding: 20px; border-radius: 10px;
+            box-shadow: 0 4px 12px var(--shadow); max-width: 800px; margin: 40px auto;
+        }
+        h2 { color: var(--heading-color); margin-top: 0;}
+    </style>
+</head>
 <body>
-    <div class="video-card" style="max-width: 800px; margin: 40px auto;">
+    <div class="video-card">
         <h2>{{ video.title }}</h2>
         {% if video.description %}
             <p>{{ video.description }}</p>
         {% endif %}
 
-        <video controls preload="metadata" style="width: 100%; border-radius: 8px;">
+        <video controls preload="metadata" style="width: 100%; border-radius: 8px; background: #000; outline: none;">
             <source src="{{ video.video.url }}" type="video/mp4">
         </video>
 
-        <div style="margin-top: 20px; text-align: center;">
-            <p style="color: var(--secondary-text); font-size: 0.9em;">
-                Из матча: <strong>{{ video.match.title }}</strong> ({{ video.match.date|date:"d.m.Y" }})
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--secondary-text); padding-top: 15px;">
+            <p style="color: var(--secondary-text); font-size: 0.95em; margin: 0;">
+                Из матча: <strong>{{ video.match.title }}</strong> <br>
+                <span style="font-size: 0.85em;">({{ video.match.date|date:"d.m.Y" }})</span>
             </p>
         </div>
     </div>
