@@ -8,6 +8,8 @@
         :root {
             --bg-color: #f4f4f9; --card-bg: #ffffff; --text-color: #333333;
             --heading-color: #2c3e50; --secondary-text: #777777; --shadow: rgba(0,0,0,0.05);
+            /* Основной цвет для плеера Plyr (синий) */
+            --plyr-color-main: #3498db;
         }
         [data-theme="dark"] {
             --bg-color: #18191a; --card-bg: #242526; --text-color: #e4e6eb;
@@ -23,8 +25,17 @@
             box-shadow: 0 2px 8px var(--shadow); margin-bottom: 25px;
         }
         h1, h3 { color: var(--heading-color); margin-top: 0;}
+
         video { width: 100%; border-radius: 8px; margin-top: 15px; outline: none; background: #000; }
+
+        /* Скругление и тень для нового плеера */
+        .plyr {
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
     </style>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 </head>
 <body>
 
@@ -47,7 +58,8 @@
             {% if video.description %}
                 <p>{{ video.description }}</p>
             {% endif %}
-            <video controls preload="metadata">
+
+            <video class="js-player" controls preload="metadata" playsinline>
                 <source src="{{ video.video.url }}" type="video/mp4">
             </video>
         </div>
@@ -55,5 +67,31 @@
         <p style="text-align: center; color: var(--secondary-text);">Для этого матча пока нет доступных видео.</p>
     {% endfor %}
 
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Инициализируем плеер для всех элементов с классом .js-player
+            const players = Plyr.setup('.js-player', {
+                controls: [
+                    'play-large',   // Большая кнопка play по центру
+                    'play',         // Кнопка play/pause на нижней панели
+                    'progress',     // Ползунок прогресса
+                    'current-time', // Текущее время
+                    'duration',     // Общее время
+                    'mute',         // Кнопка звука
+                    'volume',       // Ползунок громкости
+                    'settings',     // Шестеренка с настройками
+                    'pip',          // "Картинка-в-картинке"
+                    'fullscreen'    // Кнопка на весь экран
+                ],
+                // Настройка выбора скорости (x0.5 - x2)
+                speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+                i18n: {
+                    speed: 'Скорость',
+                    normal: 'Обычная'
+                }
+            });
+        });
+    </script>
 </body>
 </html>
