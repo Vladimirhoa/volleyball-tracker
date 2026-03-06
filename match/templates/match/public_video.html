@@ -31,6 +31,7 @@
             border-radius: 8px;
             margin-top: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            overflow: hidden; /* <-- ВАЖНО: обрезает углы видео */
         }
     </style>
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
@@ -42,7 +43,7 @@
             <p>{{ video.description }}</p>
         {% endif %}
 
-        <video class="js-player" controls preload="metadata" playsinline style="width: 100%; border-radius: 8px; background: #000; outline: none;">
+        <video class="js-player" controls preload="metadata" playsinline>
             <source src="{{ video.video.url }}" type="video/mp4">
         </video>
 

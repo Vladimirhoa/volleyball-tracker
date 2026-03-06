@@ -26,13 +26,12 @@
         }
         h1, h3 { color: var(--heading-color); margin-top: 0;}
 
-        video { width: 100%; border-radius: 8px; margin-top: 15px; outline: none; background: #000; }
-
         /* Скругление и тень для нового плеера */
         .plyr {
             border-radius: 8px;
             margin-top: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            overflow: hidden; /* <-- ВАЖНО: обрезает видео под скругленные углы контейнера */
         }
     </style>
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />

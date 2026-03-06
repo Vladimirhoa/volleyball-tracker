@@ -19,6 +19,8 @@
             --alert-info-text: #16a085;
             --alert-error-bg: #fdedec;
             --alert-error-text: #c0392b;
+            /* Цвет для плеера Plyr */
+            --plyr-color-main: #3498db;
         }
 
         [data-theme="dark"] {
@@ -72,7 +74,6 @@
             padding: 20px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px;
         }
 
-        video { width: 100%; border-radius: 8px; margin-top: 15px; outline: none; background: #000; }
         .empty-state { text-align: center; color: var(--secondary-text); padding: 20px; }
 
         /* 3. КОНФИГУРАЦИЯ ПОЛЗУНКА ТЕМЫ */
@@ -135,21 +136,17 @@
             transform: translateX(26px);
             background-color: #1a1a1a; /* ТЕМНЫЙ ЦВЕТ ПОЛЗУНКА */
         }
-    </style>
 
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <style>
-        /* Настраиваем цвет элементов плеера под стиль твоего сайта */
-        :root {
-            --plyr-color-main: #3498db;
-        }
-        /* Небольшое скругление для красоты */
+        /* Стили для плеера Plyr */
         .plyr {
             border-radius: 8px;
             margin-top: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            overflow: hidden; /* <-- ВАЖНО: обрезает видео под скругленные углы контейнера */
         }
     </style>
+
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 </head>
 <body>
 
@@ -291,7 +288,6 @@
         });
 
         // Функция копирования в буфер обмена
-       // Функция копирования в буфер обмена (с поддержкой HTTP)
         function copyToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
                 // Современный метод для HTTPS
@@ -330,8 +326,7 @@
         }
     </script>
 
-
-<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Инициализируем плеер для всех видео с классом .js-player
@@ -349,7 +344,7 @@
                     'pip',        // Режим "картинка-в-картинке"
                     'fullscreen'  // Кнопка на весь экран
                 ],
-                // Добавляем выбор скорости воспроизведения (очень полезно для анализа матчей)
+                // Добавляем выбор скорости воспроизведения
                 speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
                 i18n: {
                     speed: 'Скорость',
