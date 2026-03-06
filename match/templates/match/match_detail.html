@@ -277,12 +277,42 @@
         });
 
         // Функция копирования в буфер обмена
+       // Функция копирования в буфер обмена (с поддержкой HTTP)
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                alert('Ссылка скопирована в буфер обмена!');
-            }, function(err) {
-                alert('Не удалось скопировать ссылку: ', err);
-            });
+            if (navigator.clipboard && window.isSecureContext) {
+                // Современный метод для HTTPS
+                navigator.clipboard.writeText(text).then(function() {
+                    alert('Ссылка скопирована!');
+                }).catch(function(err) {
+                    alert('Ошибка: ' + err);
+                });
+            } else {
+                // Запасной метод для обычного HTTP (по IP-адресу)
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+
+                // Прячем элемент с экрана
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    let successful = document.execCommand('copy');
+                    if (successful) {
+                        alert('Ссылка скопирована!');
+                    } else {
+                        alert('Не удалось скопировать ссылку.');
+                    }
+                } catch (err) {
+                    alert('Ошибка копирования: ' + err);
+                }
+
+                document.body.removeChild(textArea);
+            }
         }
     </script>
 </body>
