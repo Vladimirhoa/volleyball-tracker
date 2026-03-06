@@ -16,7 +16,7 @@ class Video(models.Model):
 
     title = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
-    video = models.FileField(upload_to='videos/%Y/%m/%d', blank=True)
+    video = models.FileField(upload_to=user_directory_path, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)

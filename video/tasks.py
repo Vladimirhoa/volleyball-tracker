@@ -10,6 +10,7 @@ from celery import shared_task
 from django.conf import settings
 import re
 
+
 @shared_task
 def process_video_task(video_id):
     try:
@@ -17,7 +18,12 @@ def process_video_task(video_id):
         input_path = video.video.path
         output_path = f"{input_path}_compressed.mp4"
 
-        # Команда ffmpeg (сжимаем в 720p)
+        duration_cmd = [
+            'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+            '-of', 'default=noprint_wrappers=1:nokey=1', input_path
+        ]
+        result = subprocess.run(duration_cmd, stdout=subprocess.PIPE, text=True)
+        total_duration = float(result.stdout.strip())
         command = [
             'ffmpeg', '-y', '-i', input_path,
             '-vcodec', 'libx264', '-crf', '28', '-preset', 'fast',
@@ -25,20 +31,40 @@ def process_video_task(video_id):
             output_path
         ]
 
-        # Запускаем ffmpeg
-        subprocess.run(command, check=True)
+        process = subprocess.Popen(command, stderr=subprocess.PIPE, text=True)
 
-        # Если успешно - удаляем оригинал и переименовываем сжатый файл
-        os.remove(input_path)
-        os.rename(output_path, input_path)
+        last_progress = 0
+        time_pattern = re.compile(r"time=(\d+):(\d+):(\d+\.\d+)")
 
-        # Ставим статус "Готово"
-        video.status = 'ready'
-        video.save()
+        for line in process.stderr:
+            match = time_pattern.search(line)
+            if match:
+                hours, minutes, seconds = map(float, match.groups())
+                current_time = hours * 3600 + minutes * 60 + seconds
+
+                if total_duration > 0:
+                    percent = int((current_time / total_duration) * 100)
+                    if percent - last_progress >= 5:
+                        video.progress = percent
+                        video.save(update_fields=['progress'])
+                        last_progress = percent
+
+        process.wait()
+
+        if process.returncode == 0:
+            os.remove(input_path)
+            os.rename(output_path, input_path)
+
+            video.status = 'ready'
+            video.progress = 100
+            video.save(update_fields=['status', 'progress'])
+        else:
+            raise Exception(f"FFmpeg завершился с ошибкой, код: {process.returncode}")
 
     except Exception as e:
+        video = Video.objects.get(id=video_id)
         video.status = 'error'
-        video.save()
+        video.save(update_fields=['status'])
         print(f"Ошибка сжатия видео {video_id}: {e}")
 
 
