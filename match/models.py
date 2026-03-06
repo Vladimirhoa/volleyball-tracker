@@ -8,7 +8,7 @@ class Match(models.Model):
     my_score = models.IntegerField(default=0)
     opponent_score = models.IntegerField(default=0)
     date = models.DateField()
-    share_token = models.UUIDField(default=uuid.uuid4, editable=False, null=True)
+    share_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     class Meta:
         verbose_name = "Матч"
         verbose_name_plural = "Матчи"
