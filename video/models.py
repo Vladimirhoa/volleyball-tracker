@@ -22,7 +22,7 @@ class Video(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='processing')
     progress = models.IntegerField(default=0)
-    share_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    share_token = models.UUIDField(default=uuid.uuid4, editable=False, null=True)
 
     class Meta:
         verbose_name = "Видео"
