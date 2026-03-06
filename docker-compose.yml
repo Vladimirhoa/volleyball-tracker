@@ -38,6 +38,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
     depends_on:
       redis:
         condition: service_started

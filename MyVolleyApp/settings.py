@@ -37,13 +37,9 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://45.141.102.215:8080',
-    'http://100.80.209.87:8000',
-    'https://v-tracker.ru',
-    'https://www.v-tracker.ru',
-]
-# Application definition
+raw_csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in raw_csrf_origins.split(',') if origin.strip()]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
