@@ -5,166 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ match.title }}</title>
     <style>
-        /* 1. ПЕРЕМЕННЫЕ ТЕМЫ */
+        /* Переменные и основные стили из вашего оригинала */
         :root {
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --heading-color: #2c3e50;
-            --secondary-text: #777777;
-            --border-color: #eeeeee;
-            --shadow: rgba(0,0,0,0.05);
-            --alert-info-bg: #e8f6f3;
-            --alert-info-text: #16a085;
-            --alert-error-bg: #fdedec;
-            --alert-error-text: #c0392b;
-            --plyr-color-main: #3498db;
+            --bg-color: #f4f4f9; --card-bg: #ffffff; --text-color: #333333;
+            --heading-color: #2c3e50; --secondary-text: #777777; --border-color: #eeeeee;
+            --shadow: rgba(0,0,0,0.05); --alert-info-bg: #e8f6f3; --alert-info-text: #16a085;
+            --alert-error-bg: #fdedec; --alert-error-text: #c0392b; --plyr-color-main: #3498db;
         }
-
         [data-theme="dark"] {
-            --bg-color: #18191a;
-            --card-bg: #242526;
-            --text-color: #e4e6eb;
-            --heading-color: #f5f6f7;
-            --secondary-text: #b0b3b8;
-            --border-color: #3a3b3c;
-            --shadow: rgba(0,0,0,0.3);
-            --alert-info-bg: #1c2e2a;
-            --alert-info-text: #2ecc71;
-            --alert-error-bg: #2c1a1a;
-            --alert-error-text: #e74c3c;
+            --bg-color: #18191a; --card-bg: #242526; --text-color: #e4e6eb;
+            --heading-color: #f5f6f7; --secondary-text: #b0b3b8; --border-color: #3a3b3c;
+            --shadow: rgba(0,0,0,0.3); --alert-info-bg: #1c2e2a; --alert-info-text: #2ecc71;
+            --alert-error-bg: #2c1a1a; --alert-error-text: #e74c3c;
         }
-
-        /* 2. ОБЩИЕ СТИЛИ */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--bg-color); color: var(--text-color);
+            max-width: 800px; margin: 0 auto; padding: 20px; transition: background-color 0.3s, color 0.3s;
         }
-
         .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
-        .back-link:hover { text-decoration: underline; }
-
         .match-header, .video-card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px var(--shadow);
-            margin-bottom: 25px;
+            background-color: var(--card-bg); padding: 20px; border-radius: 10px;
+            box-shadow: 0 2px 8px var(--shadow); margin-bottom: 25px;
         }
-
         h1, h2, h3 { color: var(--heading-color); }
 
-        .status-info {
-            background-color: var(--alert-info-bg);
-            color: var(--alert-info-text);
-            padding: 20px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px;
+        /* Стили для полей инлайн-редактирования */
+        .inline-edit-input {
+            width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px;
+            border: 1px solid var(--border-color); background: var(--bg-color);
+            color: var(--text-color); font-family: inherit; font-size: 1rem;
         }
+        .inline-edit-textarea { min-height: 80px; resize: vertical; }
+        .btn-inline-save { background-color: #2ecc71; color: white; border: none; padding: 6px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-inline-cancel { background-color: #95a5a6; color: white; border: none; padding: 6px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        .status-error {
-            background-color: var(--alert-error-bg);
-            color: var(--alert-error-text);
-            padding: 20px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px;
-        }
-
-        .empty-state { text-align: center; color: var(--secondary-text); padding: 20px; }
-
-        /* 3. КОНФИГУРАЦИЯ ПОЛЗУНКА ТЕМЫ */
-        .theme-switch-wrapper {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .theme-switch {
-            display: inline-block;
-            height: 28px;
-            position: relative;
-            width: 54px;
-        }
-
+        .theme-switch-wrapper { position: fixed; bottom: 25px; right: 25px; display: flex; align-items: center; z-index: 1000; }
+        .theme-switch { display: inline-block; height: 28px; position: relative; width: 54px; }
         .theme-switch input { display: none; }
-
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 6px;
-        }
-
-        .slider .icon { font-size: 14px; user-select: none; }
-
-        .slider:before {
-            background-color: white;
-            bottom: 4px;
-            content: "";
-            height: 20px;
-            left: 4px;
-            position: absolute;
-            transition: .4s;
-            width: 20px;
-            border-radius: 50%;
-            z-index: 2;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        input:checked + .slider {
-            background-color: #2c3e50;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-            background-color: #1a1a1a;
-        }
-
-        .plyr {
-            border-radius: 8px;
-            margin-top: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; left: 4px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: #2c3e50; }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .plyr { border-radius: 8px; margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden; }
     </style>
-
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 </head>
 <body>
-
     <a href="{% url 'match_list' %}" class="back-link">← Вернуться к списку матчей</a>
 
     <div class="match-header">
         <h1>{{ match.title }}</h1>
         <p style="color: var(--secondary-text);"> {{ match.date|date:"d.m.Y" }} | Итоговый счет: <strong>{{ match.my_score }} : {{ match.opponent_score }}</strong></p>
-        {% if match.description %}
-            <p>{{ match.description }}</p>
-        {% endif %}
+        {% if match.description %}<p>{{ match.description }}</p>{% endif %}
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">+ Добавить видео</a>
-
         <div style="display: flex; gap: 10px; align-items: center;">
-            <a href="{% url 'match_edit' match.id %}" style="background-color: #2ecc71; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Редактировать</a>
-
-            <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')" style="background-color: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                🔗 Поделиться
-            </button>
-
+            <a href="{% url 'match_edit' match.id %}" style="background-color: #2ecc71; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Редактировать матч</a>
+            <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')" style="background-color: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🔗 Поделиться</button>
             <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" style="margin: 0;">
                 {% csrf_token %}
                 <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🗑 Удалить</button>
@@ -175,84 +75,40 @@
     <h2>Записи игры</h2>
 
     {% for video in videos %}
-        <div class="video-card">
+        <div class="video-card" id="video-card-{{ video.id }}">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <h3 style="margin: 0;">{{ video.title }}</h3>
-
-                <div style="display: flex; gap: 10px;">
-                    <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');">
-                        {% csrf_token %}
-                        <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2em;" title="Удалить">🗑</button>
-                    </form>
+                <div style="flex-grow: 1; margin-right: 15px;">
+                    <div id="view-mode-{{ video.id }}">
+                        <h3 id="display-title-{{ video.id }}" style="margin: 0;">{{ video.title }}</h3>
+                        <p id="display-desc-{{ video.id }}" style="margin-top: 10px; color: var(--secondary-text);">{{ video.description|default:"" }}</p>
+                    </div>
+                    <div id="edit-mode-{{ video.id }}" style="display: none;">
+                        <input type="text" id="input-title-{{ video.id }}" class="inline-edit-input" value="{{ video.title }}">
+                        <textarea id="input-desc-{{ video.id }}" class="inline-edit-input inline-edit-textarea">{{ video.description|default:"" }}</textarea>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="saveInlineEdit({{ video.id }})" class="btn-inline-save">Сохранить</button>
+                            <button onclick="toggleEditMode({{ video.id }})" class="btn-inline-cancel">Отмена</button>
+                        </div>
+                    </div>
                 </div>
+
+                <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');">
+                    {% csrf_token %}
+                    <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2em;">🗑</button>
+                </form>
             </div>
 
-            {% if video.description %}
-                <p style="margin-top: 10px;">{{ video.description }}</p>
-            {% endif %}
-
             {% if video.status == 'processing' %}
-                <div class="status-info" id="video-processing-{{ video.id }}">
-                    ⏳ Видео скачивается и обрабатывается... <br>
-                    <div style="width: 100%; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px; overflow: hidden; height: 12px;">
-                        <div id="progress-bar-{{ video.id }}" style="width: {{ video.progress|default:0 }}%; background-color: #3498db; height: 100%; transition: width 0.4s ease;"></div>
-                    </div>
-                    <span id="progress-text-{{ video.id }}" style="font-size: 0.85em; font-weight: normal; display: inline-block; margin-top: 5px;">
-                        Прогресс: {{ video.progress|default:0 }}%
-                    </span>
-                </div>
-
-                <script>
-                    (function() {
-                        const videoId = {{ video.id }};
-                        const progressBar = document.getElementById(`progress-bar-${videoId}`);
-                        const progressText = document.getElementById(`progress-text-${videoId}`);
-
-                        const interval = setInterval(() => {
-                            fetch(`/video/${videoId}/progress/`)
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.status === 'ready') {
-                                        clearInterval(interval);
-                                        window.location.reload();
-                                    } else if (data.status === 'error') {
-                                        clearInterval(interval);
-                                        progressText.innerText = '❌ Ошибка при обработке видео.';
-                                        progressText.style.color = '#e74c3c';
-                                        progressBar.style.backgroundColor = '#e74c3c';
-                                    } else {
-                                        progressBar.style.width = data.progress + '%';
-                                        progressText.innerText = 'Прогресс: ' + data.progress + '%';
-                                    }
-                                })
-                                .catch(err => console.error(err));
-                        }, 2000);
-                    })();
-                </script>
-
-            {% elif video.status == 'error' %}
-                <div class="status-error">
-                    ❌ Ошибка при обработке видео.
-                </div>
+                <div class="status-info">⏳ Обработка: {{ video.progress|default:0 }}%</div>
             {% elif video.video %}
                 <video class="js-player" controls preload="metadata" playsinline>
                     <source src="{{ video.video.url }}" type="video/mp4">
                 </video>
-
-                {% if video.status == 'ready' %}
-                <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_video' video.share_token %}')" style="background: none; border: 1px solid #3498db; color: #3498db; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em; margin-top: 10px;">
-                    🔗 Копировать ссылку на видео
-                </button>
-                    <a href="{% url 'video_edit' video.id %}" style="background: none; border: 1px solid #2ecc71; color: #2ecc71; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em; text-decoration: none; display: inline-block;">
-            ✏️ Редактировать
-        </a>
-                {% endif %}
-
-                {% if video.file_size %}
-                    <div style="text-align: right; color: var(--secondary-text); font-size: 0.85em; margin-top: 5px;">
-                        💾 {{ video.file_size|filesizeformat }}
-                    </div>
-                {% endif %}
+                <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+                    <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_video' video.share_token %}')" style="background: none; border: 1px solid #3498db; color: #3498db; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em;">🔗 Ссылка</button>
+                    <button onclick="toggleEditMode({{ video.id }})" style="background: none; border: 1px solid #2ecc71; color: #2ecc71; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em;">✏️ Редактировать текст</button>
+                    {% if video.file_size %}<div style="margin-left: auto; color: var(--secondary-text); font-size: 0.85em;">💾 {{ video.file_size|filesizeformat }}</div>{% endif %}
+                </div>
             {% endif %}
         </div>
     {% empty %}
@@ -260,86 +116,55 @@
     {% endfor %}
 
     <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider">
-                <span class="icon">☀️</span>
-                <span class="icon">🌙</span>
-            </div>
-        </label>
+        <label class="theme-switch"><input type="checkbox" id="checkbox"><div class="slider"><span class="icon">☀️</span><span class="icon">🌙</span></div></label>
     </div>
-
-    <script>
-        const toggleSwitch = document.querySelector('#checkbox');
-        const htmlElement = document.documentElement;
-
-        function switchTheme(theme) {
-            htmlElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            toggleSwitch.checked = (theme === 'dark');
-        }
-
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        switchTheme(currentTheme);
-
-        toggleSwitch.addEventListener('change', (e) => {
-            switchTheme(e.target.checked ? 'dark' : 'light');
-        });
-
-        function copyToClipboard(text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(function() {
-                    alert('Ссылка скопирована!');
-                }).catch(function(err) {
-                    alert('Ошибка: ' + err);
-                });
-            } else {
-                let textArea = document.createElement("textarea");
-                textArea.value = text;
-                textArea.style.position = "fixed";
-                textArea.style.left = "-999999px";
-                textArea.style.top = "-999999px";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    let successful = document.execCommand('copy');
-                    if (successful) {
-                        alert('Ссылка скопирована!');
-                    } else {
-                        alert('Не удалось скопировать ссылку.');
-                    }
-                } catch (err) {
-                    alert('Ошибка копирования: ' + err);
-                }
-                document.body.removeChild(textArea);
-            }
-        }
-    </script>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const players = Plyr.setup('.js-player', {
-                controls: [
-                    'play-large',
-                    'play',
-                    'progress',
-                    'current-time',
-                    'duration',
-                    'mute',
-                    'volume',
-                    'settings',
-                    'pip',
-                    'fullscreen'
-                ],
-                speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-                i18n: {
-                    speed: 'Скорость',
-                    normal: 'Обычная'
+        // Логика переключения темы
+        const toggleSwitch = document.querySelector('#checkbox');
+        const htmlElement = document.documentElement;
+        function switchTheme(theme) { htmlElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); toggleSwitch.checked = (theme === 'dark'); }
+        switchTheme(localStorage.getItem('theme') || 'light');
+        toggleSwitch.addEventListener('change', (e) => switchTheme(e.target.checked ? 'dark' : 'light'));
+
+        function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!')); }
+
+        // --- ИНЛАЙН РЕДАКТИРОВАНИЕ ---
+        function toggleEditMode(videoId) {
+            const view = document.getElementById(`view-mode-${videoId}`);
+            const edit = document.getElementById(`edit-mode-${videoId}`);
+            const isEditing = view.style.display === 'none';
+            view.style.display = isEditing ? 'block' : 'none';
+            edit.style.display = isEditing ? 'none' : 'block';
+        }
+
+        async function saveInlineEdit(videoId) {
+            const title = document.getElementById(`input-title-${videoId}`).value;
+            const description = document.getElementById(`input-desc-${videoId}`).value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('csrfmiddlewaretoken', csrfToken);
+
+            try {
+                const response = await fetch(`/video/${videoId}/edit/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById(`display-title-${videoId}`).innerText = data.title;
+                    document.getElementById(`display-desc-${videoId}`).innerText = data.description || "";
+                    toggleEditMode(videoId);
                 }
-            });
-        });
+            } catch (e) { alert('Ошибка при сохранении'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { Plyr.setup('.js-player', { speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] } }); });
     </script>
 </body>
 </html>

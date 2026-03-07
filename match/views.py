@@ -232,7 +232,13 @@ def video_edit(request, video_id):
         form = VideoEditForm(request.POST, instance=video)
         if form.is_valid():
             form.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'title': video.title,
+                    'description': video.description
+                })
             return redirect('match_detail', match_id=video.match.id)
     else:
         form = VideoEditForm(instance=video)
-    return render(request, 'match/video_form.html', context={'form': form, 'match': match, 'video': video, 'heading': 'Редактирование видео.'})
+    return redirect('match_detail', match_id=video.match.id)
