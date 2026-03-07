@@ -13,4 +13,5 @@ urlpatterns = [
     path('dashboard/', views.custom_admin_dashboard, name='custom_admin_dashboard'),
     path('shared/match/<uuid:share_token>/', views.public_match_view, name='public_match'),
     path('shared/video/<uuid:share_token>/', views.public_video_view, name='public_video'),
+    path('<int:match_id>/edit/', views.match_edit, name='match_edit'),
 ]

@@ -14,12 +14,10 @@
             --secondary-text: #777777;
             --border-color: #eeeeee;
             --shadow: rgba(0,0,0,0.05);
-            /* Цвета для статусов */
             --alert-info-bg: #e8f6f3;
             --alert-info-text: #16a085;
             --alert-error-bg: #fdedec;
             --alert-error-text: #c0392b;
-            /* Цвет для плеера Plyr */
             --plyr-color-main: #3498db;
         }
 
@@ -31,7 +29,6 @@
             --secondary-text: #b0b3b8;
             --border-color: #3a3b3c;
             --shadow: rgba(0,0,0,0.3);
-            /* Темные версии статусов */
             --alert-info-bg: #1c2e2a;
             --alert-info-text: #2ecc71;
             --alert-error-bg: #2c1a1a;
@@ -114,7 +111,7 @@
         .slider .icon { font-size: 14px; user-select: none; }
 
         .slider:before {
-            background-color: white; /* Цвет кружка в светлой теме */
+            background-color: white;
             bottom: 4px;
             content: "";
             height: 20px;
@@ -127,22 +124,20 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* Состояние "Включено" (Темная тема) */
         input:checked + .slider {
             background-color: #2c3e50;
         }
 
         input:checked + .slider:before {
             transform: translateX(26px);
-            background-color: #1a1a1a; /* ТЕМНЫЙ ЦВЕТ ПОЛЗУНКА */
+            background-color: #1a1a1a;
         }
 
-        /* Стили для плеера Plyr */
         .plyr {
             border-radius: 8px;
             margin-top: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            overflow: hidden; /* <-- ВАЖНО: обрезает видео под скругленные углы контейнера */
+            overflow: hidden;
         }
     </style>
 
@@ -154,7 +149,7 @@
 
     <div class="match-header">
         <h1>{{ match.title }}</h1>
-        <p style="color: var(--secondary-text);">🗓 {{ match.date|date:"d.m.Y" }} | 🏆 Итоговый счет: <strong>{{ match.my_score }} : {{ match.opponent_score }}</strong></p>
+        <p style="color: var(--secondary-text);"> {{ match.date|date:"d.m.Y" }} | Итоговый счет: <strong>{{ match.my_score }} : {{ match.opponent_score }}</strong></p>
         {% if match.description %}
             <p>{{ match.description }}</p>
         {% endif %}
@@ -164,17 +159,18 @@
         <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">+ Добавить видео</a>
 
         <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="{% url 'match_edit' match.id %}" style="background-color: #2ecc71; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Редактировать</a>
+
             <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')" style="background-color: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                🔗 Поделиться матчем
+                🔗 Поделиться
             </button>
 
             <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" style="margin: 0;">
                 {% csrf_token %}
-                <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🗑 Удалить матч</button>
+                <button type="submit" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🗑 Удалить</button>
             </form>
         </div>
     </div>
-
 
     <h2>Записи игры</h2>
 
@@ -182,10 +178,13 @@
         <div class="video-card">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <h3 style="margin: 0;">{{ video.title }}</h3>
-                <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');">
-                    {% csrf_token %}
-                    <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2em;">🗑</button>
-                </form>
+
+                <div style="display: flex; gap: 10px;">
+                    <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');">
+                        {% csrf_token %}
+                        <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2em;" title="Удалить">🗑</button>
+                    </form>
+                </div>
             </div>
 
             {% if video.description %}
@@ -195,11 +194,9 @@
             {% if video.status == 'processing' %}
                 <div class="status-info" id="video-processing-{{ video.id }}">
                     ⏳ Видео скачивается и обрабатывается... <br>
-
                     <div style="width: 100%; background-color: rgba(0,0,0,0.1); border-radius: 5px; margin-top: 10px; overflow: hidden; height: 12px;">
                         <div id="progress-bar-{{ video.id }}" style="width: {{ video.progress|default:0 }}%; background-color: #3498db; height: 100%; transition: width 0.4s ease;"></div>
                     </div>
-
                     <span id="progress-text-{{ video.id }}" style="font-size: 0.85em; font-weight: normal; display: inline-block; margin-top: 5px;">
                         Прогресс: {{ video.progress|default:0 }}%
                     </span>
@@ -217,7 +214,7 @@
                                 .then(data => {
                                     if (data.status === 'ready') {
                                         clearInterval(interval);
-                                        window.location.reload(); // Перезагружаем, чтобы показать готовый плеер
+                                        window.location.reload();
                                     } else if (data.status === 'error') {
                                         clearInterval(interval);
                                         progressText.innerText = '❌ Ошибка при обработке видео.';
@@ -229,7 +226,7 @@
                                     }
                                 })
                                 .catch(err => console.error(err));
-                        }, 2000); // Опрашиваем каждые 2 секунды
+                        }, 2000);
                     })();
                 </script>
 
@@ -270,7 +267,6 @@
     </div>
 
     <script>
-        // Переключение тем
         const toggleSwitch = document.querySelector('#checkbox');
         const htmlElement = document.documentElement;
 
@@ -287,29 +283,22 @@
             switchTheme(e.target.checked ? 'dark' : 'light');
         });
 
-        // Функция копирования в буфер обмена
         function copyToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
-                // Современный метод для HTTPS
                 navigator.clipboard.writeText(text).then(function() {
                     alert('Ссылка скопирована!');
                 }).catch(function(err) {
                     alert('Ошибка: ' + err);
                 });
             } else {
-                // Запасной метод для обычного HTTP (по IP-адресу)
                 let textArea = document.createElement("textarea");
                 textArea.value = text;
-
-                // Прячем элемент с экрана
                 textArea.style.position = "fixed";
                 textArea.style.left = "-999999px";
                 textArea.style.top = "-999999px";
                 document.body.appendChild(textArea);
-
                 textArea.focus();
                 textArea.select();
-
                 try {
                     let successful = document.execCommand('copy');
                     if (successful) {
@@ -320,7 +309,6 @@
                 } catch (err) {
                     alert('Ошибка копирования: ' + err);
                 }
-
                 document.body.removeChild(textArea);
             }
         }
@@ -329,22 +317,19 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Инициализируем плеер для всех видео с классом .js-player
             const players = Plyr.setup('.js-player', {
-                // Настраиваем нужные элементы управления
                 controls: [
-                    'play-large', // Большая кнопка play по центру
-                    'play',       // Кнопка play/pause в нижней панели
-                    'progress',   // Ползунок прогресса
-                    'current-time', // Текущее время
-                    'duration',   // Общее время
-                    'mute',       // Кнопка включения/выключения звука
-                    'volume',     // Ползунок громкости
-                    'settings',   // Шестеренка с настройками (скорость)
-                    'pip',        // Режим "картинка-в-картинке"
-                    'fullscreen'  // Кнопка на весь экран
+                    'play-large',
+                    'play',
+                    'progress',
+                    'current-time',
+                    'duration',
+                    'mute',
+                    'volume',
+                    'settings',
+                    'pip',
+                    'fullscreen'
                 ],
-                // Добавляем выбор скорости воспроизведения
                 speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
                 i18n: {
                     speed: 'Скорость',

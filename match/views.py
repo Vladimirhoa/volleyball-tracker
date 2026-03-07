@@ -57,7 +57,7 @@ def match_create(request):
     else:
         form = MatchForm()
 
-    return render(request, 'match/match_form.html', {'form': form})
+    return render(request, 'match/match_form.html', {'form': form, 'heading': 'Создание матча.'})
 
 
 @login_required
@@ -211,3 +211,15 @@ def public_video_view(request, share_token):
     # Ищем видео по уникальному токену
     video = get_object_or_404(Video, share_token=share_token)
     return render(request, 'match/public_video.html', {'video': video})
+
+@login_required
+def match_edit(request, match_id):
+    match = get_object_or_404(Match, id=match_id, user=request.user)
+    if request.method == "POST":
+        form = MatchForm(request.POST, instance=match)
+        if form.is_valid():
+            form.save()
+            return redirect('match_detail', match_id=match.id)
+    else:
+        form = MatchForm(instance=match)
+    return render(request, 'match/match_form.html', {"form": form, "match": match, "heading": "Редактирование матча."})

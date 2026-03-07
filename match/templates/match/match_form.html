@@ -144,7 +144,7 @@
     <a href="{% url 'match_list' %}" class="back-link">← Отмена</a>
 
     <div class="form-card">
-        <h2>Добавить новый матч 🏐</h2>
+        <h2>{{ heading }}</h2>
         <form method="post">
             {% csrf_token %}
 
