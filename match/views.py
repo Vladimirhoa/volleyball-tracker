@@ -241,4 +241,4 @@ def video_edit(request, video_id):
             return redirect('match_detail', match_id=video.match.id)
     else:
         form = VideoEditForm(instance=video)
-    return redirect('match_detail', match_id=video.match.id)
+    return render(request, 'match/match_form.html', {"form": form, "match": match, "heading": "Редактирование матча."})

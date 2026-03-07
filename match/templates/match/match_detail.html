@@ -35,6 +35,7 @@
             width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px;
             border: 1px solid var(--border-color); background: var(--bg-color);
             color: var(--text-color); font-family: inherit; font-size: 1rem;
+            box-sizing: border-box;
         }
         .inline-edit-textarea { min-height: 80px; resize: vertical; }
         .btn-inline-save { background-color: #2ecc71; color: white; border: none; padding: 6px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -55,15 +56,46 @@
     <a href="{% url 'match_list' %}" class="back-link">← Вернуться к списку матчей</a>
 
     <div class="match-header">
-        <h1>{{ match.title }}</h1>
-        <p style="color: var(--secondary-text);"> {{ match.date|date:"d.m.Y" }} | Итоговый счет: <strong>{{ match.my_score }} : {{ match.opponent_score }}</strong></p>
-        {% if match.description %}<p>{{ match.description }}</p>{% endif %}
+        <div id="match-view-mode">
+            <h1 id="match-display-title">{{ match.title }}</h1>
+            <p style="color: var(--secondary-text);">
+                {{ match.date|date:"d.m.Y" }} |
+                Итоговый счет: <strong><span id="match-display-score">{{ match.my_score }} : {{ match.opponent_score }}</span></strong>
+            </p>
+            <p id="match-display-desc">{% if match.description %}{{ match.description }}{% endif %}</p>
+        </div>
+
+        <div id="match-edit-mode" style="display: none;">
+            <label style="font-size: 0.85em; color: var(--secondary-text);">Название:</label>
+            <input type="text" id="match-input-title" class="inline-edit-input" value="{{ match.title }}">
+
+            <div style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center;">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85em; color: var(--secondary-text);">Наш счет:</label>
+                    <input type="number" id="match-input-my-score" class="inline-edit-input" value="{{ match.my_score }}">
+                </div>
+                <span style="padding-top: 15px;">:</span>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85em; color: var(--secondary-text);">Счет противника:</label>
+                    <input type="number" id="match-input-opponent-score" class="inline-edit-input" value="{{ match.opponent_score }}">
+                </div>
+            </div>
+
+            <label style="font-size: 0.85em; color: var(--secondary-text);">Описание:</label>
+            <textarea id="match-input-desc" class="inline-edit-input inline-edit-textarea">{{ match.description|default:"" }}</textarea>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="saveMatchInlineEdit()" class="btn-inline-save">Сохранить</button>
+                <button onclick="toggleMatchEditMode()" class="btn-inline-cancel">Отмена</button>
+            </div>
+        </div>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <a href="{% url 'video_create' match.id %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">+ Добавить видео</a>
         <div style="display: flex; gap: 10px; align-items: center;">
-            <a href="{% url 'match_edit' match.id %}" style="background-color: #2ecc71; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Редактировать матч</a>
+            <button onclick="toggleMatchEditMode()" style="background-color: #2ecc71; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Редактировать матч</button>
+
             <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')" style="background-color: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🔗 Поделиться</button>
             <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" style="margin: 0;">
                 {% csrf_token %}
@@ -130,7 +162,7 @@
 
         function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!')); }
 
-        // --- ИНЛАЙН РЕДАКТИРОВАНИЕ ---
+        // --- ИНЛАЙН РЕДАКТИРОВАНИЕ ВИДЕО ---
         function toggleEditMode(videoId) {
             const view = document.getElementById(`view-mode-${videoId}`);
             const edit = document.getElementById(`edit-mode-${videoId}`);
@@ -161,7 +193,48 @@
                     document.getElementById(`display-desc-${videoId}`).innerText = data.description || "";
                     toggleEditMode(videoId);
                 }
-            } catch (e) { alert('Ошибка при сохранении'); }
+            } catch (e) { alert('Ошибка при сохранении видео'); }
+        }
+
+        // --- ИНЛАЙН РЕДАКТИРОВАНИЕ МАТЧА ---
+        function toggleMatchEditMode() {
+            const view = document.getElementById('match-view-mode');
+            const edit = document.getElementById('match-edit-mode');
+            const isEditing = view.style.display === 'none';
+            view.style.display = isEditing ? 'block' : 'none';
+            edit.style.display = isEditing ? 'none' : 'block';
+        }
+
+        async function saveMatchInlineEdit() {
+            const title = document.getElementById('match-input-title').value;
+            const myScore = document.getElementById('match-input-my-score').value;
+            const oppScore = document.getElementById('match-input-opponent-score').value;
+            const description = document.getElementById('match-input-desc').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('my_score', myScore);
+            formData.append('opponent_score', oppScore);
+            formData.append('description', description);
+            // Передаем дату матча в формате YYYY-MM-DD, так как она обязательна в MatchForm
+            formData.append('date', "{{ match.date|date:'Y-m-d' }}");
+            formData.append('csrfmiddlewaretoken', csrfToken);
+
+            try {
+                const response = await fetch(`/{{ match.id }}/edit/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById('match-display-title').innerText = data.title;
+                    document.getElementById('match-display-score').innerText = `${data.my_score} : ${data.opponent_score}`;
+                    document.getElementById('match-display-desc').innerText = data.description || "";
+                    toggleMatchEditMode();
+                }
+            } catch (e) { alert('Ошибка при сохранении матча'); }
         }
 
         document.addEventListener('DOMContentLoaded', () => { Plyr.setup('.js-player', { speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] } }); });
