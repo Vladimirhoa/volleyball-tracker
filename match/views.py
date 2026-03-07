@@ -225,14 +225,14 @@ def match_edit(request, match_id):
     return render(request, 'match/match_form.html', {"form": form, "match": match, "heading": "Редактирование матча."})
 
 @login_required
-def video_edit(request, video_id, match_id):
+def video_edit(request, video_id):
     video = get_object_or_404(Video, id=video_id, user=request.user)
     match = video.match
     if request.method == "POST":
         form = VideoEditForm(request.POST, instance=video)
         if form.is_valid():
             form.save()
-            return redirect('match_detail', match_id=match_id)
+            return redirect('match_detail', match_id=video.match.id)
     else:
         form = VideoEditForm(instance=video)
     return render(request, 'match/video_form.html', context={'form': form, 'match': match, 'video': video, 'heading': 'Редактирование видео.'})
