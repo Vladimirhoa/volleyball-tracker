@@ -212,6 +212,8 @@ def public_video_view(request, share_token):
     video = get_object_or_404(Video, share_token=share_token)
     return render(request, 'match/public_video.html', {'video': video})
 
+from django.http import JsonResponse # убедитесь, что импорт есть в начале файла
+
 @login_required
 def match_edit(request, match_id):
     match = get_object_or_404(Match, id=match_id, user=request.user)
@@ -219,6 +221,16 @@ def match_edit(request, match_id):
         form = MatchForm(request.POST, instance=match)
         if form.is_valid():
             form.save()
+            # Добавляем проверку на AJAX-запрос
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'title': match.title,
+                    'my_score': match.my_score,
+                    'opponent_score': match.opponent_score,
+                    'description': match.description,
+                    'date': match.date.strftime('%Y-%m-%d')
+                })
             return redirect('match_detail', match_id=match.id)
     else:
         form = MatchForm(instance=match)
@@ -241,4 +253,4 @@ def video_edit(request, video_id):
             return redirect('match_detail', match_id=video.match.id)
     else:
         form = VideoEditForm(instance=video)
-    return render(request, 'match/match_form.html', {"form": form, "match": match, "heading": "Редактирование матча."})
+    return redirect('match_detail', match_id=video.match.id)
