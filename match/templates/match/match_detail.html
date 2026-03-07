@@ -243,6 +243,9 @@
                 <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_video' video.share_token %}')" style="background: none; border: 1px solid #3498db; color: #3498db; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em; margin-top: 10px;">
                     🔗 Копировать ссылку на видео
                 </button>
+                    <a href="{% url 'video_edit' video.id %}" style="background: none; border: 1px solid #2ecc71; color: #2ecc71; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em; text-decoration: none; display: inline-block;">
+            ✏️ Редактировать
+        </a>
                 {% endif %}
 
                 {% if video.file_size %}

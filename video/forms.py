@@ -5,3 +5,8 @@ class VideoForm(forms.ModelForm):
     class Meta:
         model = Video
         fields = ['title', 'description', 'video']
+
+class VideoEditForm(forms.ModelForm):
+    class Meta:
+        model = Video
+        fields = ['title', 'description']
