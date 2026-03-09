@@ -140,7 +140,9 @@
         </div>
 
         {% if video.status == 'processing' %}
-            <div class="status-info">⏳ Обработка видео: {{ video.progress|default:0 }}%</div>
+            <div class="status-info processing-badge" data-video-id="{{ video.id }}">
+                ⏳ Обработка видео: <span id="progress-val-{{ video.id }}">{{ video.progress|default:0 }}</span>%
+            </div>
         {% elif video.video %}
             <video class="js-player" controls preload="metadata" playsinline>
                 <source src="{{ video.video.url }}" type="video/mp4">
@@ -167,7 +169,7 @@
 <script>
     function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!')); }
 
-    // --- ЛОГИКА ВЫПАДАЮЩИХ МЕНЮ ---
+    // --- ЛОГИКА ВЫПАДАЮЩИХ МЕНЮ (3 точки) ---
     function toggleMenu(menuId, event) {
         event.preventDefault();
         event.stopPropagation();
@@ -244,6 +246,35 @@
                 toggleMatchEditMode();
             }
         } catch (e) { alert('Ошибка при сохранении матча'); }
+    }
+
+    // --- АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ ПРОГРЕССА ОБРАБОТКИ ---
+    function checkVideoProgress() {
+        const badges = document.querySelectorAll('.processing-badge');
+        if (badges.length === 0) return; // Если нет видео в обработке - скрипт просто спит
+
+        badges.forEach(async (badge) => {
+            const videoId = badge.getAttribute('data-video-id');
+            try {
+                const response = await fetch(`/video/${videoId}/progress/`);
+                const data = await response.json();
+
+                if (data.status === 'processing') {
+                    // Обновляем циферку процентов прямо на лету
+                    document.getElementById(`progress-val-${videoId}`).innerText = data.progress;
+                } else if (data.status === 'ready' || data.status === 'error') {
+                    // Видео готово! Перезагружаем страницу один раз, чтобы отрендерился плеер
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Ошибка проверки статуса', error);
+            }
+        });
+    }
+
+    // Запускаем опрос сервера каждые 3 секунды, только если на странице есть желтая плашка "Обработка"
+    if (document.querySelectorAll('.processing-badge').length > 0) {
+        setInterval(checkVideoProgress, 3000);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
