@@ -5,62 +5,54 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <style>
-    /* Отступ для ссылки "Назад" */
     .back-link-wrapper { margin-bottom: 20px; }
 
-    /* Стили крупного счета */
     .match-score-large {
-        font-size: 1.4rem;
-        font-weight: bold;
-        color: var(--text-color);
-        background: var(--bg-color);
-        padding: 4px 12px;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
+        font-size: 1.4rem; font-weight: bold; color: var(--text-color);
+        background: var(--bg-color); padding: 4px 12px;
+        border-radius: 8px; border: 1px solid var(--border-color);
     }
 
-    /* Блок с кнопками действий (Адаптивный) */
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap; /* Кнопки переносятся на мобилках */
-        margin-bottom: 25px;
-    }
-    .action-buttons > * {
-        flex: 1 1 calc(50% - 10px); /* На мобилке по 2 кнопки в ряд или на всю ширину */
-        text-align: center;
-    }
-    @media (min-width: 600px) {
-        .action-buttons > * { flex: 0 1 auto; } /* На ПК обычный размер */
-    }
+    /* Адаптивные кнопки действий */
+    .action-buttons { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
+    .action-buttons > .btn { flex: 1; text-align: center; }
 
-    /* Стили карточки видео */
-    .plyr {
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        margin-top: 15px;
-        overflow: hidden; /* Обрезает углы видео */
-    }
-    
-    .status-info {
-        background-color: var(--warning);
-        color: #fff;
-        padding: 12px;
-        border-radius: 8px;
-        text-align: center;
-        font-weight: bold;
-        margin-top: 15px;
-    }
-
-    .video-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-    
+    .plyr { border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-top: 15px; overflow: hidden; }
+    .status-info { background-color: var(--warning); color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px; }
     .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+
+    /* --- СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ (3 точки) --- */
+    .dropdown { position: relative; display: inline-block; }
+
+    .icon-btn {
+        background: none; border: none; font-size: 1.6rem; color: var(--text-muted);
+        cursor: pointer; padding: 0 10px; border-radius: 8px; font-weight: bold;
+        transition: background-color 0.2s, color 0.2s; height: 100%; display: flex; align-items: center;
+    }
+    .icon-btn-bordered {
+        border: 2px solid var(--border-color); width: 46px; height: 46px;
+        justify-content: center;
+    }
+    .icon-btn:hover, .icon-btn.active { background-color: rgba(0,0,0,0.05); color: var(--text-color); }
+    [data-theme="dark"] .icon-btn:hover, [data-theme="dark"] .icon-btn.active { background-color: rgba(255,255,255,0.1); }
+    [data-theme="dark"] .icon-btn-bordered { border-color: var(--border-color); }
+
+    .dropdown-content {
+        display: none; position: absolute; right: 0; top: 100%; margin-top: 5px;
+        background-color: var(--card-bg); min-width: 170px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 1px solid var(--border-color);
+        border-radius: 8px; z-index: 100; overflow: hidden;
+    }
+    [data-theme="dark"] .dropdown-content { box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
+    .dropdown-content.show { display: block; }
+
+    .dropdown-content button {
+        color: var(--text-color); padding: 12px 16px; text-decoration: none;
+        display: block; width: 100%; text-align: left; border: none; background: none;
+        font-size: 0.95rem; cursor: pointer; font-family: inherit; transition: background 0.2s;
+    }
+    .dropdown-content button:hover { background-color: var(--bg-color); }
+    .text-danger { color: var(--danger) !important; font-weight: bold; }
 </style>
 {% endblock %}
 
@@ -80,28 +72,13 @@
     </div>
 
     <div id="match-edit-mode" style="display: none;">
-        <div class="form-group">
-            <label>Название:</label>
-            <input type="text" id="match-input-title" class="form-control" value="{{ match.title }}">
-        </div>
-
+        <div class="form-group"><label>Название:</label><input type="text" id="match-input-title" class="form-control" value="{{ match.title }}"></div>
         <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
-            <div style="flex: 1;">
-                <label>Наш счет:</label>
-                <input type="number" id="match-input-my-score" class="form-control" value="{{ match.my_score }}">
-            </div>
+            <div style="flex: 1;"><label>Наш счет:</label><input type="number" id="match-input-my-score" class="form-control" value="{{ match.my_score }}"></div>
             <span style="font-weight: bold; font-size: 1.5rem; margin-top: 20px;">:</span>
-            <div style="flex: 1;">
-                <label>Счет противника:</label>
-                <input type="number" id="match-input-opponent-score" class="form-control" value="{{ match.opponent_score }}">
-            </div>
+            <div style="flex: 1;"><label>Счет противника:</label><input type="number" id="match-input-opponent-score" class="form-control" value="{{ match.opponent_score }}"></div>
         </div>
-
-        <div class="form-group">
-            <label>Описание:</label>
-            <textarea id="match-input-desc" class="form-control">{{ match.description|default:"" }}</textarea>
-        </div>
-
+        <div class="form-group"><label>Описание:</label><textarea id="match-input-desc" class="form-control">{{ match.description|default:"" }}</textarea></div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button onclick="saveMatchInlineEdit()" class="btn btn-success">Сохранить</button>
             <button onclick="toggleMatchEditMode()" class="btn btn-outline">Отмена</button>
@@ -111,12 +88,18 @@
 
 <div class="action-buttons">
     <a href="{% url 'video_create' match.id %}" class="btn btn-primary">+ Добавить видео</a>
-    <button onclick="toggleMatchEditMode()" class="btn btn-outline">✏️ Настроить матч</button>
-    <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')" class="btn btn-outline">🔗 Поделиться</button>
-    <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" style="margin: 0; display: inline-flex; flex: 1 1 auto;">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger" style="width: 100%;">🗑 Удалить</button>
-    </form>
+    <button onclick="toggleMatchEditMode()" class="btn btn-outline">✏️ Настроить</button>
+
+    <div class="dropdown">
+        <button class="icon-btn icon-btn-bordered" onclick="toggleMenu('menu-match-actions', event)">⋮</button>
+        <div class="dropdown-content" id="menu-match-actions">
+            <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')">🔗 Поделиться</button>
+            <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="text-danger">🗑 Удалить матч</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <h2 style="margin-top: 30px; margin-bottom: 20px;">Записи игры</h2>
@@ -132,12 +115,8 @@
                 </div>
 
                 <div id="edit-mode-{{ video.id }}" style="display: none;">
-                    <div class="form-group">
-                        <input type="text" id="input-title-{{ video.id }}" class="form-control" value="{{ video.title }}">
-                    </div>
-                    <div class="form-group">
-                        <textarea id="input-desc-{{ video.id }}" class="form-control" style="min-height: 60px;">{{ video.description|default:"" }}</textarea>
-                    </div>
+                    <div class="form-group"><input type="text" id="input-title-{{ video.id }}" class="form-control" value="{{ video.title }}"></div>
+                    <div class="form-group"><textarea id="input-desc-{{ video.id }}" class="form-control" style="min-height: 60px;">{{ video.description|default:"" }}</textarea></div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button onclick="saveInlineEdit({{ video.id }})" class="btn btn-success btn-sm">Сохранить</button>
                         <button onclick="toggleEditMode({{ video.id }})" class="btn btn-outline btn-sm">Отмена</button>
@@ -145,10 +124,19 @@
                 </div>
             </div>
 
-            <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');" style="margin: 0;">
-                {% csrf_token %}
-                <button type="submit" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.3rem; padding: 5px;">🗑</button>
-            </form>
+            <div class="dropdown">
+                <button class="icon-btn" onclick="toggleMenu('menu-video-{{ video.id }}', event)">⋮</button>
+                <div class="dropdown-content" id="menu-video-{{ video.id }}">
+                    {% if video.video %}
+                        <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_video' video.share_token %}')">🔗 Поделиться</button>
+                    {% endif %}
+                    <button onclick="toggleEditMode({{ video.id }})">✏️ Изменить текст</button>
+                    <form method="post" action="{% url 'video_delete' video.id %}" onsubmit="return confirm('Удалить это видео?');" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="text-danger">🗑 Удалить видео</button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         {% if video.status == 'processing' %}
@@ -158,13 +146,11 @@
                 <source src="{{ video.video.url }}" type="video/mp4">
             </video>
 
-            <div class="video-actions">
-                <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_video' video.share_token %}')" class="btn btn-outline btn-sm">🔗 Ссылка на видео</button>
-                <button onclick="toggleEditMode({{ video.id }})" class="btn btn-outline btn-sm">✏️ Изменить текст</button>
-                {% if video.file_size %}
-                    <div style="margin-left: auto; color: var(--text-muted); font-size: 0.85rem;">💾 {{ video.file_size|filesizeformat }}</div>
-                {% endif %}
-            </div>
+            {% if video.file_size %}
+                <div style="margin-top: 10px; text-align: right; color: var(--text-muted); font-size: 0.85rem;">
+                    💾 {{ video.file_size|filesizeformat }}
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 {% empty %}
@@ -179,9 +165,30 @@
 {% block scripts %}
 <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 <script>
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!'));
+    function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!')); }
+
+    // --- ЛОГИКА ВЫПАДАЮЩИХ МЕНЮ ---
+    function toggleMenu(menuId, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        document.querySelectorAll('.dropdown-content.show').forEach(menu => {
+            if (menu.id !== menuId) {
+                menu.classList.remove('show');
+                menu.previousElementSibling.classList.remove('active');
+            }
+        });
+        const menu = document.getElementById(menuId);
+        menu.classList.toggle('show');
+        event.target.classList.toggle('active');
     }
+    document.addEventListener('click', function(event) {
+        if (!event.target.matches('.icon-btn')) {
+            document.querySelectorAll('.dropdown-content.show').forEach(menu => {
+                menu.classList.remove('show');
+                menu.previousElementSibling.classList.remove('active');
+            });
+        }
+    });
 
     // --- ИНЛАЙН РЕДАКТИРОВАНИЕ ВИДЕО ---
     function toggleEditMode(videoId) {
@@ -196,18 +203,10 @@
         const title = document.getElementById(`input-title-${videoId}`).value;
         const description = document.getElementById(`input-desc-${videoId}`).value;
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
         const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('csrfmiddlewaretoken', csrfToken);
-
+        formData.append('title', title); formData.append('description', description); formData.append('csrfmiddlewaretoken', csrfToken);
         try {
-            const response = await fetch(`/video/${videoId}/edit/`, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
+            const response = await fetch(`/video/${videoId}/edit/`, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await response.json();
             if (data.status === 'success') {
                 document.getElementById(`display-title-${videoId}`).innerText = data.title;
@@ -232,21 +231,11 @@
         const oppScore = document.getElementById('match-input-opponent-score').value;
         const description = document.getElementById('match-input-desc').value;
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
         const formData = new FormData();
-        formData.append('title', title);
-        formData.append('my_score', myScore);
-        formData.append('opponent_score', oppScore);
-        formData.append('description', description);
-        formData.append('date', "{{ match.date|date:'Y-m-d' }}");
-        formData.append('csrfmiddlewaretoken', csrfToken);
-
+        formData.append('title', title); formData.append('my_score', myScore); formData.append('opponent_score', oppScore);
+        formData.append('description', description); formData.append('date', "{{ match.date|date:'Y-m-d' }}"); formData.append('csrfmiddlewaretoken', csrfToken);
         try {
-            const response = await fetch(`/{{ match.id }}/edit/`, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
+            const response = await fetch(`/{{ match.id }}/edit/`, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await response.json();
             if (data.status === 'success') {
                 document.getElementById('match-display-title').innerText = data.title;

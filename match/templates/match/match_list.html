@@ -4,88 +4,66 @@
 
 {% block extra_head %}
 <style>
-    /* Специфичные стили только для этой страницы */
     .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        flex-wrap: wrap; /* Чтобы на мобилках кнопка переносилась аккуратно */
-        gap: 15px;
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px; flex-wrap: wrap; gap: 15px;
     }
+    .dashboard-header h1 { margin-bottom: 0; }
 
-    .dashboard-header h1 {
-        margin-bottom: 0;
-    }
-
-    /* Карточка матча: делаем её кликабельной и красивой */
     .match-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-decoration: none;
-        color: inherit;
-        transition: transform 0.2s, box-shadow 0.2s;
-        padding: 15px 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        text-decoration: none; color: inherit;
+        transition: transform 0.2s, box-shadow 0.2s; padding: 15px 20px;
     }
+    .match-item:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); }
+    [data-theme="dark"] .match-item:hover { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5); }
 
-    .match-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-    }
+    .match-info { flex-grow: 1; padding-right: 15px; }
+    .match-title { font-weight: 700; font-size: 1.15rem; color: var(--text-color); margin-bottom: 4px; display: block; }
+    .match-date { font-size: 0.85rem; color: var(--text-muted); }
 
-    [data-theme="dark"] .match-item:hover {
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
-    }
-
-    .match-info {
-        flex-grow: 1;
-        padding-right: 15px;
-    }
-
-    .match-title {
-        font-weight: 700;
-        font-size: 1.15rem;
-        color: var(--text-color);
-        margin-bottom: 4px;
-        display: block;
-    }
-
-    .match-date {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-    }
-
-    /* Плашки со счетом */
     .score-badge {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-weight: 700;
-        font-size: 1.2rem;
-        letter-spacing: 1px;
-        display: inline-block;
-        white-space: nowrap;
+        padding: 6px 12px; border-radius: 20px; font-weight: 700;
+        font-size: 1.2rem; letter-spacing: 1px; display: inline-block; white-space: nowrap;
     }
-
-    /* Цвета победы, поражения и ничьей */
     .score-win { background-color: rgba(39, 174, 96, 0.15); color: var(--success); }
     .score-loss { background-color: rgba(231, 76, 60, 0.15); color: var(--danger); }
     .score-draw { background-color: rgba(243, 156, 18, 0.15); color: var(--warning); }
 
-    .delete-form {
-        margin: 0 0 0 15px;
-    }
-    
-    .stats-text {
-        font-size: 0.95rem;
-        color: var(--text-muted);
-    }
+    .stats-text { font-size: 0.95rem; color: var(--text-muted); }
     .stats-text strong { color: var(--text-color); }
+
+    /* --- СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ (3 точки) --- */
+    .dropdown { position: relative; display: inline-block; }
+
+    .icon-btn {
+        background: none; border: none; font-size: 1.6rem; color: var(--text-muted);
+        cursor: pointer; padding: 0 10px; border-radius: 8px; font-weight: bold;
+        transition: background-color 0.2s, color 0.2s; height: 100%; display: flex; align-items: center;
+    }
+    .icon-btn:hover, .icon-btn.active { background-color: rgba(0,0,0,0.05); color: var(--text-color); }
+    [data-theme="dark"] .icon-btn:hover, [data-theme="dark"] .icon-btn.active { background-color: rgba(255,255,255,0.1); }
+
+    .dropdown-content {
+        display: none; position: absolute; right: 0; top: 100%; margin-top: 5px;
+        background-color: var(--card-bg); min-width: 170px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 1px solid var(--border-color);
+        border-radius: 8px; z-index: 100; overflow: hidden;
+    }
+    [data-theme="dark"] .dropdown-content { box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
+    .dropdown-content.show { display: block; }
+
+    .dropdown-content button {
+        color: var(--text-color); padding: 12px 16px; text-decoration: none;
+        display: block; width: 100%; text-align: left; border: none; background: none;
+        font-size: 0.95rem; cursor: pointer; font-family: inherit; transition: background 0.2s;
+    }
+    .dropdown-content button:hover { background-color: var(--bg-color); }
+    .text-danger { color: var(--danger) !important; font-weight: bold; }
 </style>
 {% endblock %}
 
 {% block content %}
-
 <div class="card" style="padding: 15px 20px;">
     <div class="stats-text">
         Ваши видео занимают: <strong>{{ user_total_size|filesizeformat }}</strong>
@@ -111,14 +89,14 @@
 <div class="match-list">
     {% for match in matches %}
         <div class="card match-item" style="display: flex;">
-            
+
             <a href="{% url 'match_detail' match.id %}" style="display: flex; flex-grow: 1; align-items: center; text-decoration: none; justify-content: space-between;">
                 <div class="match-info">
                     <span class="match-title">{{ match.title }}</span>
                     <span class="match-date">{{ match.date|date:"d.m.Y" }}</span>
                 </div>
 
-                <div class="score-badge 
+                <div class="score-badge
                     {% if match.my_score > match.opponent_score %}score-win
                     {% elif match.my_score < match.opponent_score %}score-loss
                     {% else %}score-draw{% endif %}">
@@ -126,10 +104,16 @@
                 </div>
             </a>
 
-            <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" class="delete-form">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-sm" title="Удалить" style="padding: 6px 10px; border-radius: 6px;">🗑</button>
-            </form>
+            <div class="dropdown" style="margin-left: 10px;">
+                <button class="icon-btn" onclick="toggleMenu('menu-match-{{ match.id }}', event)">⋮</button>
+                <div class="dropdown-content" id="menu-match-{{ match.id }}">
+                    <button onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'public_match' match.share_token %}')">🔗 Поделиться</button>
+                    <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="text-danger">🗑 Удалить</button>
+                    </form>
+                </div>
+            </div>
 
         </div>
     {% empty %}
@@ -140,5 +124,41 @@
         </div>
     {% endfor %}
 </div>
+{% endblock %}
 
+{% block scripts %}
+<script>
+    // Копирование в буфер
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!'));
+    }
+
+    // Открытие/закрытие меню
+    function toggleMenu(menuId, event) {
+        event.preventDefault(); // Предотвращаем переход по ссылке
+        event.stopPropagation();
+
+        // Закрываем все остальные открытые меню
+        document.querySelectorAll('.dropdown-content.show').forEach(menu => {
+            if (menu.id !== menuId) {
+                menu.classList.remove('show');
+                menu.previousElementSibling.classList.remove('active');
+            }
+        });
+
+        const menu = document.getElementById(menuId);
+        menu.classList.toggle('show');
+        event.target.classList.toggle('active');
+    }
+
+    // Закрытие меню при клике в любое другое место
+    document.addEventListener('click', function(event) {
+        if (!event.target.matches('.icon-btn')) {
+            document.querySelectorAll('.dropdown-content.show').forEach(menu => {
+                menu.classList.remove('show');
+                menu.previousElementSibling.classList.remove('active');
+            });
+        }
+    });
+</script>
 {% endblock %}
