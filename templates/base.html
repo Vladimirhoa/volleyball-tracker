@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}V-Tracker{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{% static 'icon-192.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'icon-192.jpg' %}">
     
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="#3498db">
     
-    <link rel="apple-touch-icon" href="{% static 'icon-192.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'icon-192.jpg' %}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="V-Tracker">
@@ -272,6 +272,16 @@
         }
     </script>
 
+    <script>
+        // Регистрируем Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker зарегистрирован!', reg.scope))
+                    .catch(err => console.error('Ошибка регистрации SW:', err));
+            });
+        }
+    </script>
     {% block scripts %}
     {% endblock %}
 
