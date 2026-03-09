@@ -19,11 +19,13 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('bobik-sdoh/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('match.urls')),
+    path('sw.js', TemplateView.as_view(template_name="sw.js", content_type='application/javascript'), name='sw.js'),
 ]
 
 urlpatterns += [
