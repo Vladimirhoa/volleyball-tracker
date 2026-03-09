@@ -1,206 +1,74 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добавить матч</title>
-    <style>
-        /* 1. ПЕРЕМЕННЫЕ ТЕМЫ */
-        :root {
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --heading-color: #2c3e50;
-            --input-bg: #ffffff;
-            --input-border: #cccccc;
-            --shadow: rgba(0,0,0,0.1);
-        }
+{% extends 'base.html' %}
 
-        [data-theme="dark"] {
-            --bg-color: #18191a;
-            --card-bg: #242526;
-            --text-color: #e4e6eb;
-            --heading-color: #f5f6f7;
-            --input-bg: #3a3b3c;
-            --input-border: #4e4f50;
-            --shadow: rgba(0,0,0,0.3);
-        }
+{% block title %}{{ heading }} | V-Tracker{% endblock %}
 
-        /* 2. ОБЩИЕ СТИЛИ */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
+{% block extra_head %}
+<style>
+    .back-link-wrapper { margin-bottom: 20px; }
+    
+    /* Делаем поля счета в одну линию */
+    .score-row {
+        display: flex; 
+        gap: 15px; 
+    }
+    .score-row .form-group {
+        flex: 1;
+    }
+</style>
+{% endblock %}
 
-        .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
-        .back-link:hover { text-decoration: underline; }
+{% block content %}
+<div class="back-link-wrapper">
+    <a href="javascript:history.back()">← Отмена</a>
+</div>
 
-        .form-card {
-            background-color: var(--card-bg);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px var(--shadow);
-        }
+<div class="card" style="max-width: 600px; margin: 0 auto; padding: 30px 20px;">
+    <h2 style="margin-top: 0; margin-bottom: 25px;">{{ heading }}</h2>
+    
+    <form method="post" id="match-form">
+        {% csrf_token %}
 
-        h2 { color: var(--heading-color); margin-top: 0; }
-
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-        label { font-weight: bold; margin-bottom: 5px; color: var(--text-color); }
-
-        input, textarea {
-            padding: 10px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text-color);
-            border-radius: 5px;
-            font-size: 16px;
-            font-family: inherit;
-            transition: border-color 0.2s, background-color 0.3s;
-        }
-
-        textarea { resize: vertical; min-height: 100px; }
-        input:focus, textarea:focus { outline: none; border-color: #3498db; }
-
-        button {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        button:hover { background-color: #2ecc71; }
-
-        /* 3. КОНФИГУРАЦИЯ ПОЛЗУНКА ТЕМЫ */
-        .theme-switch-wrapper {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .theme-switch {
-            display: inline-block;
-            height: 28px;
-            position: relative;
-            width: 54px;
-        }
-
-        .theme-switch input { display: none; }
-
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 6px;
-        }
-
-        .slider .icon { font-size: 14px; user-select: none; }
-
-        .slider:before {
-            background-color: white;
-            bottom: 4px;
-            content: "";
-            height: 20px;
-            left: 4px;
-            position: absolute;
-            transition: .4s;
-            width: 20px;
-            border-radius: 50%;
-            z-index: 2;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        input:checked + .slider { background-color: #2c3e50; }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-            background-color: #1a1a1a; /* Темный ползунок */
-        }
-    </style>
-</head>
-<body>
-
-    <a href="{% url 'match_list' %}" class="back-link">← Отмена</a>
-
-    <div class="form-card">
-        <h2>{{ heading }}</h2>
-        <form method="post">
-            {% csrf_token %}
-
+        <div class="form-group">
+            <label>Название:</label>
+            {{ form.title }}
+        </div>
+        
+        <div class="form-group">
+            <label>Описание (необязательно):</label>
+            {{ form.description }}
+        </div>
+        
+        <div class="score-row">
             <div class="form-group">
-                <label>Название:</label>
-                {{ form.title }}
+                <label>Наш счет:</label>
+                {{ form.my_score }}
             </div>
             <div class="form-group">
-                <label>Описание (необязательно):</label>
-                {{ form.description }}
+                <label>Счет противника:</label>
+                {{ form.opponent_score }}
             </div>
-            <div style="display: flex; gap: 15px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Наш счет:</label>
-                    {{ form.my_score }}
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Счет противника:</label>
-                    {{ form.opponent_score }}
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Дата:</label>
-                {{ form.date }}
-            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Дата:</label>
+            {{ form.date }}
+        </div>
 
-            <button type="submit">Сохранить матч</button>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 20px; font-size: 1.1rem; padding: 14px;">Сохранить матч</button>
+    </form>
+</div>
+{% endblock %}
 
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider">
-                <span class="icon">☀️</span>
-                <span class="icon">🌙</span>
-            </div>
-        </label>
-    </div>
-
-    <script>
-        const toggleSwitch = document.querySelector('#checkbox');
-        const htmlElement = document.documentElement;
-
-        function switchTheme(theme) {
-            htmlElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            toggleSwitch.checked = (theme === 'dark');
-        }
-
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        switchTheme(currentTheme);
-
-        toggleSwitch.addEventListener('change', (e) => {
-            switchTheme(e.target.checked ? 'dark' : 'light');
+{% block scripts %}
+<script>
+    // Автоматически добавляем красивый класс ко всем полям ввода, которые генерирует Django
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputs = document.querySelectorAll("#match-form input, #match-form textarea");
+        inputs.forEach(input => {
+            if (input.type !== "hidden" && input.type !== "submit") {
+                input.classList.add("form-control");
+            }
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}

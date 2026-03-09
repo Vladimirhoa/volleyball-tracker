@@ -1,96 +1,84 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ match.title }}</title>
-    <style>
-        :root {
-            --bg-color: #f4f4f9; --card-bg: #ffffff; --text-color: #333333;
-            --heading-color: #2c3e50; --secondary-text: #777777; --shadow: rgba(0,0,0,0.05);
-            /* Основной цвет для плеера Plyr (синий) */
-            --plyr-color-main: #3498db;
-        }
-        [data-theme="dark"] {
-            --bg-color: #18191a; --card-bg: #242526; --text-color: #e4e6eb;
-            --heading-color: #f5f6f7; --secondary-text: #b0b3b8; --shadow: rgba(0,0,0,0.3);
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color);
-            max-width: 800px; margin: 0 auto; padding: 20px;
-        }
-        .card {
-            background-color: var(--card-bg); padding: 20px; border-radius: 10px;
-            box-shadow: 0 2px 8px var(--shadow); margin-bottom: 25px;
-        }
-        h1, h3 { color: var(--heading-color); margin-top: 0;}
+{% extends 'base.html' %}
 
-        /* Скругление и тень для нового плеера */
-        .plyr {
-            border-radius: 8px;
-            margin-top: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            overflow: hidden; /* <-- ВАЖНО: обрезает видео под скругленные углы контейнера */
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-</head>
-<body>
+{% block title %}{{ match.title }} | V-Tracker{% endblock %}
 
-    <div class="card" style="text-align: center;">
-        <h1>{{ match.title }}</h1>
-        <p style="color: var(--secondary-text); font-size: 1.1em;">
-            🗓 {{ match.date|date:"d.m.Y" }} <br>
-            🏆 Итоговый счет: <strong style="font-size: 1.3em; color: var(--text-color);">{{ match.my_score }} : {{ match.opponent_score }}</strong>
-        </p>
-        {% if match.description %}
-            <p>{{ match.description }}</p>
-        {% endif %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+<style>
+    .match-header { text-align: center; padding: 30px 20px; }
+    
+    /* Плашка со счетом */
+    .score-badge {
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    .score-win { background-color: rgba(39, 174, 96, 0.15); color: var(--success); }
+    .score-loss { background-color: rgba(231, 76, 60, 0.15); color: var(--danger); }
+    .score-draw { background-color: rgba(243, 156, 18, 0.15); color: var(--warning); }
+
+    .plyr {
+        border-radius: 8px;
+        margin-top: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card match-header">
+    <h1 style="margin-top: 0; margin-bottom: 10px;">{{ match.title }}</h1>
+    
+    <div style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 15px;">
+        🗓 {{ match.date|date:"d.m.Y" }}
+    </div>
+    
+    <div class="score-badge 
+        {% if match.my_score > match.opponent_score %}score-win
+        {% elif match.my_score < match.opponent_score %}score-loss
+        {% else %}score-draw{% endif %}">
+        {{ match.my_score }} : {{ match.opponent_score }}
     </div>
 
-    <h2 style="text-align: center; color: var(--heading-color);">Видеозаписи игры</h2>
+    {% if match.description %}
+        <p style="margin-top: 20px; font-size: 1.05rem;">{{ match.description }}</p>
+    {% endif %}
+</div>
 
-    {% for video in videos %}
-        <div class="card">
-            <h3>{{ video.title }}</h3>
-            {% if video.description %}
-                <p>{{ video.description }}</p>
-            {% endif %}
+<h2 style="text-align: center; margin: 30px 0 20px;">Видеозаписи игры</h2>
 
-            <video class="js-player" controls preload="metadata" playsinline>
-                <source src="{{ video.video.url }}" type="video/mp4">
-            </video>
-        </div>
-    {% empty %}
-        <p style="text-align: center; color: var(--secondary-text);">Для этого матча пока нет доступных видео.</p>
-    {% endfor %}
+{% for video in videos %}
+    <div class="card">
+        <h3 style="margin-top: 0; margin-bottom: 5px;">{{ video.title }}</h3>
+        {% if video.description %}
+            <p style="color: var(--text-muted); margin-bottom: 15px;">{{ video.description }}</p>
+        {% endif %}
 
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Инициализируем плеер для всех элементов с классом .js-player
-            const players = Plyr.setup('.js-player', {
-                controls: [
-                    'play-large',   // Большая кнопка play по центру
-                    'play',         // Кнопка play/pause на нижней панели
-                    'progress',     // Ползунок прогресса
-                    'current-time', // Текущее время
-                    'duration',     // Общее время
-                    'mute',         // Кнопка звука
-                    'volume',       // Ползунок громкости
-                    'settings',     // Шестеренка с настройками
-                    'pip',          // "Картинка-в-картинке"
-                    'fullscreen'    // Кнопка на весь экран
-                ],
-                // Настройка выбора скорости (x0.5 - x2)
-                speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-                i18n: {
-                    speed: 'Скорость',
-                    normal: 'Обычная'
-                }
-            });
+        <video class="js-player" controls preload="metadata" playsinline>
+            <source src="{{ video.video.url }}" type="video/mp4">
+        </video>
+    </div>
+{% empty %}
+    <div class="card" style="text-align: center; padding: 40px 20px;">
+        <h3 style="color: var(--text-muted); margin: 0;">Для этого матча пока нет доступных видео 🎬</h3>
+    </div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        Plyr.setup('.js-player', {
+            controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+            i18n: { speed: 'Скорость', normal: 'Обычная' }
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}

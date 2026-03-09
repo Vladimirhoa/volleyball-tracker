@@ -1,243 +1,144 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-Tracker — онлайн дневник и аналитика волейбольных матчей</title>
-    <meta name="description" content="Удобный трекер для волейболистов: записывайте результаты матчей, загружайте видео, анализируйте игру и делитесь успехами с командой.">
+{% extends 'base.html' %}
 
-    <meta name="keywords" content="волейбол, волейбольный трекер, дневник матчей, статистика волейбола">
-    <style>
-        /* 1. ПЕРЕМЕННЫЕ ТЕМЫ */
-        :root {
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --heading-color: #2c3e50;
-            --secondary-text: #888888;
-            --border-color: #eeeeee;
-            --shadow: rgba(0,0,0,0.05);
+{% block title %}Дневник матчей | V-Tracker{% endblock %}
 
-            /* Цвета для счета (Light) */
-            --score-bg: #ecf0f1;
-            --win-bg: #e8f8f5; --win-text: #27ae60;
-            --loss-bg: #fdedec; --loss-text: #e74c3c;
-            --draw-bg: #fef5e7; --draw-text: #f39c12;
-        }
+{% block extra_head %}
+<style>
+    /* Специфичные стили только для этой страницы */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap; /* Чтобы на мобилках кнопка переносилась аккуратно */
+        gap: 15px;
+    }
 
-        [data-theme="dark"] {
-            --bg-color: #18191a;
-            --card-bg: #242526;
-            --text-color: #e4e6eb;
-            --heading-color: #f5f6f7;
-            --secondary-text: #b0b3b8;
-            --border-color: #3a3b3c;
-            --shadow: rgba(0,0,0,0.3);
+    .dashboard-header h1 {
+        margin-bottom: 0;
+    }
 
-            /* Цвета для счета (Dark) */
-            --score-bg: #3a3b3c;
-            --win-bg: #1c2e2a; --win-text: #2ecc71;
-            --loss-bg: #2c1a1a; --loss-text: #e74c3c;
-            --draw-bg: #2d261a; --draw-text: #f39c12;
-        }
+    /* Карточка матча: делаем её кликабельной и красивой */
+    .match-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.2s, box-shadow 0.2s;
+        padding: 15px 20px;
+    }
 
-        /* 2. ОБЩИЕ СТИЛИ */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
+    .match-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
 
-        h1 { text-align: center; color: var(--heading-color); margin-bottom: 30px; }
+    [data-theme="dark"] .match-item:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
 
-        .user-card, .match-card {
-            background-color: var(--card-bg);
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px var(--shadow);
-            margin-bottom: 20px;
-            transition: transform 0.2s, background-color 0.3s;
-        }
+    .match-info {
+        flex-grow: 1;
+        padding-right: 15px;
+    }
 
-        .match-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow);
-        }
+    .match-title {
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: var(--text-color);
+        margin-bottom: 4px;
+        display: block;
+    }
 
-        .match-list { display: flex; flex-direction: column; gap: 15px; }
-        .match-info { display: flex; flex-direction: column; }
-        .match-title { font-weight: 600; font-size: 1.1em; margin-bottom: 4px; color: var(--text-color); }
-        .match-date { font-size: 0.85em; color: var(--secondary-text); }
+    .match-date {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
 
-        .match-score {
-            font-size: 1.3em;
-            font-weight: bold;
-            background-color: var(--score-bg);
-            padding: 8px 12px;
-            border-radius: 8px;
-            letter-spacing: 1px;
-            transition: background-color 0.3s;
-        }
+    /* Плашки со счетом */
+    .score-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+        display: inline-block;
+        white-space: nowrap;
+    }
 
-        .score-win { color: var(--win-text); background-color: var(--win-bg); }
-        .score-loss { color: var(--loss-text); background-color: var(--loss-bg); }
-        .score-draw { color: var(--draw-text); background-color: var(--draw-bg); }
+    /* Цвета победы, поражения и ничьей */
+    .score-win { background-color: rgba(39, 174, 96, 0.15); color: var(--success); }
+    .score-loss { background-color: rgba(231, 76, 60, 0.15); color: var(--danger); }
+    .score-draw { background-color: rgba(243, 156, 18, 0.15); color: var(--warning); }
 
-        hr { border: 0; border-top: 1px solid var(--border-color); margin: 10px 0; }
+    .delete-form {
+        margin: 0 0 0 15px;
+    }
+    
+    .stats-text {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+    }
+    .stats-text strong { color: var(--text-color); }
+</style>
+{% endblock %}
 
-        /* 3. КОНФИГУРАЦИЯ ПОЛЗУНКА ТЕМЫ */
-        .theme-switch-wrapper {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-        }
+{% block content %}
 
-        .theme-switch {
-            display: inline-block;
-            height: 28px;
-            position: relative;
-            width: 54px;
-        }
-
-        .theme-switch input { display: none; }
-
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 6px;
-        }
-
-        .slider .icon { font-size: 14px; user-select: none; }
-
-        .slider:before {
-            background-color: white; /* Цвет кружка в светлой теме */
-            bottom: 4px;
-            content: "";
-            height: 20px;
-            left: 4px;
-            position: absolute;
-            transition: .4s;
-            width: 20px;
-            border-radius: 50%;
-            z-index: 2;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Состояние "Включено" (Темная тема) */
-        input:checked + .slider {
-            background-color: #2c3e50; /* Фон трека */
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-            background-color: #1a1a1a; /* ТЕМНЫЙ ЦВЕТ ПОЛЗУНКА */
-        }
-    </style>
-</head>
-<body>
-
-<div class="user-card">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span><strong>{{ user.username }}</strong></span>
-        <form method="post" action="{% url 'logout' %}" style="margin: 0;">
-            {% csrf_token %}
-            <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Выйти</button>
-        </form>
-    </div>
-
-    <div style="margin-top: 10px; font-size: 0.9em; color: var(--secondary-text);">
+<div class="card" style="padding: 15px 20px;">
+    <div class="stats-text">
         Ваши видео занимают: <strong>{{ user_total_size|filesizeformat }}</strong>
     </div>
 
     {% if user.is_superuser %}
-        <hr>
-        <div style="font-size: 0.85em; color: var(--secondary-text);">
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0;">
+        <div class="stats-text">
             Всего на сервере: <strong>{{ total_server_size|filesizeformat }}</strong><br>
             Свободно на диске: <strong>{{ free_disk_space|filesizeformat }}</strong>
         </div>
-        <div style="margin-top: 15px;">
-            <a href="{% url 'custom_admin_dashboard' %}" style="background-color: #8e44ad; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Управление пользователями</a>
+        <div style="margin-top: 12px;">
+            <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-outline btn-sm">Управление пользователями</a>
         </div>
     {% endif %}
 </div>
 
-<h1>Дневник матчей</h1>
-
-<div style="text-align: center; margin-bottom: 30px;">
-    <a href="{% url 'match_create' %}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">+ Добавить матч</a>
+<div class="dashboard-header">
+    <h1>Дневник матчей</h1>
+    <a href="{% url 'match_create' %}" class="btn btn-primary">+ Добавить матч</a>
 </div>
 
 <div class="match-list">
     {% for match in matches %}
-    <div class="match-card" style="display: flex; justify-content: space-between; align-items: center;">
-        <a href="{% url 'match_detail' match.id %}" style="text-decoration: none; color: inherit; flex-grow: 1; display: flex; justify-content: space-between; align-items: center; padding-right: 15px;">
-            <div class="match-info">
-                <span class="match-title">{{ match.title }}</span>
-                <span class="match-date">{{ match.date|date:"d.m.Y" }}</span>
-            </div>
+        <div class="card match-item" style="display: flex;">
+            
+            <a href="{% url 'match_detail' match.id %}" style="display: flex; flex-grow: 1; align-items: center; text-decoration: none; justify-content: space-between;">
+                <div class="match-info">
+                    <span class="match-title">{{ match.title }}</span>
+                    <span class="match-date">{{ match.date|date:"d.m.Y" }}</span>
+                </div>
 
-            <div class="match-score
-                {% if match.my_score > match.opponent_score %}score-win
-                {% elif match.my_score < match.opponent_score %}score-loss
-                {% else %}score-draw{% endif %}">
-                {{ match.my_score }} : {{ match.opponent_score }}
-            </div>
-        </a>
+                <div class="score-badge 
+                    {% if match.my_score > match.opponent_score %}score-win
+                    {% elif match.my_score < match.opponent_score %}score-loss
+                    {% else %}score-draw{% endif %}">
+                    {{ match.my_score }} : {{ match.opponent_score }}
+                </div>
+            </a>
 
-        <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Удалить матч?');" style="margin: 0;">
-            {% csrf_token %}
-            <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.5em;" title="Удалить">🗑</button>
-        </form>
-    </div>
+            <form method="post" action="{% url 'match_delete' match.id %}" onsubmit="return confirm('Точно удалить этот матч?');" class="delete-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" title="Удалить" style="padding: 6px 10px; border-radius: 6px;">🗑</button>
+            </form>
+
+        </div>
     {% empty %}
-    <p style="text-align: center; color: var(--secondary-text);">Матчей пока нет. Добавьте первую игру!</p>
+        <div class="card" style="text-align: center; padding: 40px 20px;">
+            <h3 style="color: var(--text-muted);">Матчей пока нет 🏐</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Запишите свою первую игру, чтобы начать вести статистику.</p>
+            <a href="{% url 'match_create' %}" class="btn btn-primary">Добавить первый матч</a>
+        </div>
     {% endfor %}
 </div>
 
-<div class="theme-switch-wrapper">
-    <label class="theme-switch" for="checkbox">
-        <input type="checkbox" id="checkbox" />
-        <div class="slider">
-            <span class="icon">☀️</span>
-            <span class="icon">🌙</span>
-        </div>
-    </label>
-</div>
-
-<script>
-    const toggleSwitch = document.querySelector('#checkbox');
-    const htmlElement = document.documentElement;
-
-    function switchTheme(theme) {
-        htmlElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        toggleSwitch.checked = (theme === 'dark');
-    }
-
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    switchTheme(currentTheme);
-
-    toggleSwitch.addEventListener('change', (e) => {
-        switchTheme(e.target.checked ? 'dark' : 'light');
-    });
-</script>
-
-</body>
-</html>
+{% endblock %}

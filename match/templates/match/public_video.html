@@ -1,84 +1,49 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ video.title }}</title>
-    <style>
-        :root {
-            --bg-color: #f4f4f9; --card-bg: #ffffff; --text-color: #333333;
-            --heading-color: #2c3e50; --secondary-text: #777777; --shadow: rgba(0,0,0,0.05);
-            /* Основной цвет для плеера Plyr */
-            --plyr-color-main: #3498db;
-        }
-        [data-theme="dark"] {
-            --bg-color: #18191a; --card-bg: #242526; --text-color: #e4e6eb;
-            --heading-color: #f5f6f7; --secondary-text: #b0b3b8; --shadow: rgba(0,0,0,0.3);
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color);
-            padding: 20px; transition: background-color 0.3s, color 0.3s;
-        }
-        .video-card {
-            background-color: var(--card-bg); padding: 20px; border-radius: 10px;
-            box-shadow: 0 4px 12px var(--shadow); max-width: 800px; margin: 40px auto;
-        }
-        h2 { color: var(--heading-color); margin-top: 0;}
+{% extends 'base.html' %}
 
-        /* Скругление и тень для нового плеера */
-        .plyr {
-            border-radius: 8px;
-            margin-top: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            overflow: hidden; /* <-- ВАЖНО: обрезает углы видео */
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-</head>
-<body>
-    <div class="video-card">
-        <h2>{{ video.title }}</h2>
-        {% if video.description %}
-            <p>{{ video.description }}</p>
-        {% endif %}
+{% block title %}{{ video.title }} | V-Tracker{% endblock %}
 
-        <video class="js-player" controls preload="metadata" playsinline>
-            <source src="{{ video.video.url }}" type="video/mp4">
-        </video>
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+<style>
+    .plyr {
+        border-radius: 8px;
+        margin-top: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
 
-        <div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--secondary-text); padding-top: 15px;">
-            <p style="color: var(--secondary-text); font-size: 0.95em; margin: 0;">
-                Из матча: <strong>{{ video.match.title }}</strong> <br>
-                <span style="font-size: 0.85em;">({{ video.match.date|date:"d.m.Y" }})</span>
-            </p>
-        </div>
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto; padding: 25px;">
+    <h2 style="margin-top: 0; margin-bottom: 10px;">{{ video.title }}</h2>
+    
+    {% if video.description %}
+        <p style="color: var(--text-muted); margin-bottom: 15px;">{{ video.description }}</p>
+    {% endif %}
+
+    <video class="js-player" controls preload="metadata" playsinline>
+        <source src="{{ video.video.url }}" type="video/mp4">
+    </video>
+
+    <div style="margin-top: 25px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 15px;">
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">
+            Из матча: <a href="{% url 'public_match' video.match.share_token %}" style="font-weight: bold;">{{ video.match.title }}</a> <br>
+            <span style="font-size: 0.85rem;">({{ video.match.date|date:"d.m.Y" }})</span>
+        </p>
     </div>
+</div>
+{% endblock %}
 
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const player = new Plyr('.js-player', {
-                controls: [
-                    'play-large',   // Большая кнопка play по центру
-                    'play',         // Кнопка play/pause на нижней панели
-                    'progress',     // Ползунок прогресса
-                    'current-time', // Текущее время
-                    'duration',     // Общее время
-                    'mute',         // Кнопка звука
-                    'volume',       // Ползунок громкости
-                    'settings',     // Шестеренка с настройками
-                    'pip',          // "Картинка-в-картинке"
-                    'fullscreen'    // Кнопка на весь экран
-                ],
-                // Настройка выбора скорости (x0.5 - x2)
-                speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-                i18n: {
-                    speed: 'Скорость',
-                    normal: 'Обычная'
-                }
-            });
+{% block scripts %}
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const player = new Plyr('.js-player', {
+            controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+            i18n: { speed: 'Скорость', normal: 'Обычная' }
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}

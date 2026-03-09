@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}V-Tracker{% endblock %}</title>
+
+    <style>
+        /* =========================================
+           1. ПЕРЕМЕННЫЕ И ЦВЕТА (СВЕТЛАЯ / ТЕМНАЯ ТЕМА)
+           ========================================= */
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-muted: #7f8c8d;
+            --heading-color: #2c3e50;
+            --border-color: #e1e4e8;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+            --primary: #3498db;
+            --primary-hover: #2980b9;
+            --success: #27ae60;
+            --success-hover: #219653;
+            --danger: #e74c3c;
+            --danger-hover: #c0392b;
+            --warning: #f39c12;
+
+            --nav-bg: #ffffff;
+            --input-bg: #ffffff;
+            --radius: 12px;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --heading-color: #ffffff;
+            --border-color: #333333;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+            --nav-bg: #1e1e1e;
+            --input-bg: #2c2c2c;
+        }
+
+        /* =========================================
+           2. БАЗОВЫЕ СТИЛИ И ТИПОГРАФИКА
+           ========================================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 { color: var(--heading-color); margin-bottom: 15px; }
+        a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--primary-hover); }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* =========================================
+           3. ШАПКА И НАВИГАЦИЯ (HEADER)
+           ========================================= */
+        .navbar {
+            background-color: var(--nav-bg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        [data-theme="dark"] .navbar { box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
+        .nav-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--heading-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Красивая и аккуратная кнопка темы */
+        .theme-btn {
+            background: none;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* =========================================
+           4. КНОПКИ (Удобные для мобилок)
+           ========================================= */
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s, box-shadow 0.2s;
+            width: 100%; /* По умолчанию на всю ширину на мобилках */
+            text-decoration: none;
+        }
+
+        @media (min-width: 600px) {
+            .btn { width: auto; } /* На ПК кнопки по ширине текста */
+        }
+
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary { background-color: var(--primary); color: #fff; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-success { background-color: var(--success); color: #fff; }
+        .btn-success:hover { background-color: var(--success-hover); }
+
+        .btn-danger { background-color: var(--danger); color: #fff; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+
+        .btn-outline { background-color: transparent; border: 2px solid var(--border-color); color: var(--text-color); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+        .btn-sm { padding: 8px 14px; font-size: 0.9rem; }
+
+        /* =========================================
+           5. КАРТОЧКИ И ФОРМЫ
+           ========================================= */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem;}
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        textarea.form-control { resize: vertical; min-height: 100px; }
+
+        /* =========================================
+           6. АДАПТИВНОСТЬ (МОБИЛЬНЫЕ УСТРОЙСТВА)
+           ========================================= */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .card { padding: 15px; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.3rem; }
+            .nav-container { padding: 10px 15px; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'match_list' %}" class="nav-brand">🏐 V-Tracker</a>
+
+            <div class="nav-actions">
+                {% if user.is_authenticated %}
+                    <span style="font-size: 0.9rem; font-weight: 600; display: none; margin-right: 10px;" id="username-display">{{ user.username }}</span>
+                {% endif %}
+
+                <button id="theme-toggle" class="theme-btn" aria-label="Переключить тему">
+                    <span id="theme-icon">☀️</span>
+                </button>
+
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline btn-sm" style="padding: 6px 12px;">Выйти</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+
+        function applyTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
+        }
+
+        // Загрузка сохраненной темы
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(currentTheme);
+
+        // Обработчик переключения
+        themeToggleBtn.addEventListener('click', () => {
+            const newTheme = htmlElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+
+        // Показываем юзернейм только на экранах шире 400px (чтобы не ломать верстку на мелких телефонах)
+        if(window.innerWidth > 400) {
+            const usernameDisplay = document.getElementById('username-display');
+            if(usernameDisplay) usernameDisplay.style.display = 'inline-block';
+        }
+    </script>
+
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+</html>

@@ -1,138 +1,68 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель управления пользователями</title>
-    <style>
-        /* 1. ПЕРЕМЕННЫЕ ТЕМЫ */
-        :root {
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --heading-color: #2c3e50;
-            --secondary-text: #777777;
-            --border-color: #eeeeee;
-            --table-header: #f8f9fa;
-            --shadow: rgba(0,0,0,0.05);
-        }
+{% extends 'base.html' %}
 
-        [data-theme="dark"] {
-            --bg-color: #18191a;
-            --card-bg: #242526;
-            --text-color: #e4e6eb;
-            --heading-color: #f5f6f7;
-            --secondary-text: #b0b3b8;
-            --border-color: #3a3b3c;
-            --table-header: #2d2e2f;
-            --shadow: rgba(0,0,0,0.3);
-        }
+{% block title %}Панель управления | V-Tracker{% endblock %}
 
-        /* 2. ОБЩИЕ СТИЛИ */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
+{% block extra_head %}
+<style>
+    .back-link-wrapper { margin-bottom: 20px; }
+    
+    /* Стили для адаптивной таблицы (чтобы на мобилках можно было свайпать вбок) */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto; /* Включаем горизонтальный скролл */
+        -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+        border-radius: 8px;
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap; /* Запрещаем тексту в ячейках переноситься, чтобы таблица не плющилась */
+    }
+    
+    .admin-table th, .admin-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: left;
+    }
+    
+    .admin-table th {
+        background-color: rgba(0, 0, 0, 0.03);
+        font-weight: 600;
+        color: var(--heading-color);
+    }
+    
+    [data-theme="dark"] .admin-table th {
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+    
+    /* Красивый бейдж для админа */
+    .admin-badge {
+        background-color: rgba(231, 76, 60, 0.15);
+        color: var(--danger);
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        margin-left: 8px;
+        font-weight: bold;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
 
-        .back-link { display: inline-block; margin-bottom: 20px; color: #3498db; text-decoration: none; font-weight: bold; }
-        .back-link:hover { text-decoration: underline; }
+{% block content %}
+<div class="back-link-wrapper">
+    <a href="{% url 'match_list' %}">← Вернуться к матчам</a>
+</div>
 
-        .dashboard-card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+        <h1 style="margin: 0; font-size: 1.5rem;">Статистика пользователей</h1>
+        <a href="/bobik-sdoh/auth/user/add/" class="btn btn-success btn-sm">+ Добавить пользователя</a>
+    </div>
 
-        h1 { color: var(--heading-color); }
-
-        /* Таблицы */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: left; color: var(--text-color); }
-        th { background-color: var(--table-header); font-weight: bold; color: var(--heading-color); }
-
-        /* Кнопки */
-        .btn { padding: 8px 15px; text-decoration: none; border-radius: 5px; color: white; font-weight: bold; display: inline-block; }
-        .btn-add { background-color: #27ae60; margin-bottom: 15px; }
-        .btn-edit { background-color: #f39c12; font-size: 0.85em; padding: 6px 12px; }
-
-        /* 3. КОНФИГУРАЦИЯ ПОЛЗУНКА ТЕМЫ */
-        .theme-switch-wrapper {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .theme-switch {
-            display: inline-block;
-            height: 28px;
-            position: relative;
-            width: 54px;
-        }
-
-        .theme-switch input { display: none; }
-
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 6px;
-        }
-
-        .slider .icon { font-size: 14px; user-select: none; }
-
-        .slider:before {
-            background-color: white; /* Кружок в светлой теме */
-            bottom: 4px;
-            content: "";
-            height: 20px;
-            left: 4px;
-            position: absolute;
-            transition: .4s;
-            width: 20px;
-            border-radius: 50%;
-            z-index: 2;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Темная тема (включено) */
-        input:checked + .slider {
-            background-color: #2c3e50;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-            background-color: #1a1a1a; /* Темный кружок */
-        }
-    </style>
-</head>
-<body>
-
-    <a href="{% url 'match_list' %}" class="back-link">← Вернуться к матчам</a>
-
-    <div class="dashboard-card">
-        <h1>Статистика пользователей</h1>
-
-        <a href="/bobik-sdoh/auth/user/add/" class="btn btn-add">+ Добавить пользователя</a>
-
-        <table>
+    <div class="table-responsive">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>Логин</th>
@@ -147,46 +77,20 @@
                 <tr>
                     <td>
                         <strong>{{ stat.user.username }}</strong>
-                        {% if stat.user.is_superuser %}<span style="color: #e74c3c; font-size: 0.8em;">(Админ)</span>{% endif %}
+                        {% if stat.user.is_superuser %}
+                            <span class="admin-badge">Админ</span>
+                        {% endif %}
                     </td>
-                    <td>{{ stat.user.email|default:"-" }}</td>
+                    <td style="color: var(--text-muted);">{{ stat.user.email|default:"-" }}</td>
                     <td>{{ stat.video_count }} шт.</td>
                     <td><strong>{{ stat.total_size|filesizeformat }}</strong></td>
                     <td>
-                        <a href="/bobik-sdoh/auth/user/{{ stat.user.id }}/change/" class="btn btn-edit">Настроить</a>
+                        <a href="/bobik-sdoh/auth/user/{{ stat.user.id }}/change/" class="btn btn-outline btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">Настроить</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider">
-                <span class="icon">☀️</span>
-                <span class="icon">🌙</span>
-            </div>
-        </label>
-    </div>
-
-    <script>
-        const toggleSwitch = document.querySelector('#checkbox');
-        const htmlElement = document.documentElement;
-
-        function switchTheme(theme) {
-            htmlElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            toggleSwitch.checked = (theme === 'dark');
-        }
-
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        switchTheme(currentTheme);
-
-        toggleSwitch.addEventListener('change', (e) => {
-            switchTheme(e.target.checked ? 'dark' : 'light');
-        });
-    </script>
-</body>
-</html>
+</div>
+{% endblock %}
