@@ -1,82 +1,40 @@
 {% extends 'base.html' %}
-
-{% block title %}{{ match.title }} | V-Tracker{% endblock %}
+{% load static %} {% block title %}{{ match.title }} | V-Tracker{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-<style>
-    .back-link-wrapper { margin-bottom: 20px; }
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <link rel="stylesheet" href="{% static 'match/css/plyr-custom.css' %}" />
 
-    .match-score-large {
-        font-size: 1.4rem; font-weight: bold; color: var(--text-color);
-        background: var(--bg-color); padding: 4px 12px;
-        border-radius: 8px; border: 1px solid var(--border-color);
-    }
+    <style>
+        /* Оставляем стили, которые нужны ИМЕННО для этой страницы (счет, кнопки, выпадающее меню) */
+        .back-link-wrapper { margin-bottom: 20px; }
 
-    /* Адаптивные кнопки действий */
-    .action-buttons { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
-    .action-buttons > .btn { flex: 1; text-align: center; }
+        .match-score-large {
+            font-size: 1.4rem; font-weight: bold; color: var(--text-color);
+            background: var(--bg-color); padding: 4px 12px;
+            border-radius: 8px; border: 1px solid var(--border-color);
+        }
 
-    /* --- НАСТРОЙКИ ПЛЕЕРА (МОБИЛЬНАЯ АДАПТАЦИЯ) --- */
-    .plyr {
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        margin-top: 15px;
-        overflow: hidden;
-        /* КРИТИЧНО ДЛЯ МОБИЛОК: Отключает зум браузера по двойному тапу, разрешая перемотку */
-        touch-action: manipulation;
-    }
+        .action-buttons { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
+        .action-buttons > .btn { flex: 1; text-align: center; }
 
-    /* Поднимаем панель управления, чтобы она не перекрывалась системной полоской (iPhone/Android) */
-    .plyr__controls {
-        padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important;
-        background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.7)) !important; /* Плавное затемнение снизу */
-    }
+        .status-info { background-color: var(--warning); color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
 
-    /* Делаем полоску прогресса толще, чтобы в нее было легко попасть пальцем */
-    .plyr--video .plyr__progress__container {
-        margin-bottom: 8px;
-    }
-    .plyr input[type='range'] {
-        height: 6px !important;
-    }
-
-    .status-info { background-color: var(--warning); color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px; }
-    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-
-    /* --- СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ (3 точки) --- */
-    .dropdown { position: relative; display: inline-block; }
-
-    .icon-btn {
-        background: none; border: none; font-size: 1.6rem; color: var(--text-muted);
-        cursor: pointer; padding: 0 10px; border-radius: 8px; font-weight: bold;
-        transition: background-color 0.2s, color 0.2s; height: 100%; display: flex; align-items: center;
-    }
-    .icon-btn-bordered {
-        border: 2px solid var(--border-color); width: 46px; height: 46px;
-        justify-content: center;
-    }
-    .icon-btn:hover, .icon-btn.active { background-color: rgba(0,0,0,0.05); color: var(--text-color); }
-    [data-theme="dark"] .icon-btn:hover, [data-theme="dark"] .icon-btn.active { background-color: rgba(255,255,255,0.1); }
-    [data-theme="dark"] .icon-btn-bordered { border-color: var(--border-color); }
-
-    .dropdown-content {
-        display: none; position: absolute; right: 0; top: 100%; margin-top: 5px;
-        background-color: var(--card-bg); min-width: 170px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 1px solid var(--border-color);
-        border-radius: 8px; z-index: 100; overflow: hidden;
-    }
-    [data-theme="dark"] .dropdown-content { box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
-    .dropdown-content.show { display: block; }
-
-    .dropdown-content button {
-        color: var(--text-color); padding: 12px 16px; text-decoration: none;
-        display: block; width: 100%; text-align: left; border: none; background: none;
-        font-size: 0.95rem; cursor: pointer; font-family: inherit; transition: background 0.2s;
-    }
-    .dropdown-content button:hover { background-color: var(--bg-color); }
-    .text-danger { color: var(--danger) !important; font-weight: bold; }
-</style>
+        /* СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ (3 точки) */
+        .dropdown { position: relative; display: inline-block; }
+        .icon-btn { background: none; border: none; font-size: 1.6rem; color: var(--text-muted); cursor: pointer; padding: 0 10px; border-radius: 8px; font-weight: bold; transition: background-color 0.2s, color 0.2s; height: 100%; display: flex; align-items: center; }
+        .icon-btn-bordered { border: 2px solid var(--border-color); width: 46px; height: 46px; justify-content: center; }
+        .icon-btn:hover, .icon-btn.active { background-color: rgba(0,0,0,0.05); color: var(--text-color); }
+        [data-theme="dark"] .icon-btn:hover, [data-theme="dark"] .icon-btn.active { background-color: rgba(255,255,255,0.1); }
+        [data-theme="dark"] .icon-btn-bordered { border-color: var(--border-color); }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 100%; margin-top: 5px; background-color: var(--card-bg); min-width: 170px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 8px; z-index: 100; overflow: hidden; }
+        [data-theme="dark"] .dropdown-content { box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
+        .dropdown-content.show { display: block; }
+        .dropdown-content button { color: var(--text-color); padding: 12px 16px; text-decoration: none; display: block; width: 100%; text-align: left; border: none; background: none; font-size: 0.95rem; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+        .dropdown-content button:hover { background-color: var(--bg-color); }
+        .text-danger { color: var(--danger) !important; font-weight: bold; }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -188,142 +146,112 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-<script>
-    function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!')); }
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="{% static 'match/js/plyr-custom.js' %}"></script>
 
-    // --- ЛОГИКА ВЫПАДАЮЩИХ МЕНЮ (3 точки) ---
-    function toggleMenu(menuId, event) {
-        event.preventDefault();
-        event.stopPropagation();
-        document.querySelectorAll('.dropdown-content.show').forEach(menu => {
-            if (menu.id !== menuId) {
-                menu.classList.remove('show');
-                menu.previousElementSibling.classList.remove('active');
+    <script>
+        // ВОЗВРАЩАЕМ ЛОГИКУ ДЛЯ КНОПОК И МЕНЮ:
+        function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => alert('Ссылка скопирована!')); }
+
+        function toggleMenu(menuId, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.querySelectorAll('.dropdown-content.show').forEach(menu => {
+                if (menu.id !== menuId) {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.classList.remove('active');
+                }
+            });
+            const menu = document.getElementById(menuId);
+            menu.classList.toggle('show');
+            event.target.classList.toggle('active');
+        }
+        document.addEventListener('click', function(event) {
+            if (!event.target.matches('.icon-btn')) {
+                document.querySelectorAll('.dropdown-content.show').forEach(menu => {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.classList.remove('active');
+                });
             }
         });
-        const menu = document.getElementById(menuId);
-        menu.classList.toggle('show');
-        event.target.classList.toggle('active');
-    }
-    document.addEventListener('click', function(event) {
-        if (!event.target.matches('.icon-btn')) {
-            document.querySelectorAll('.dropdown-content.show').forEach(menu => {
-                menu.classList.remove('show');
-                menu.previousElementSibling.classList.remove('active');
+
+        function toggleEditMode(videoId) {
+            const view = document.getElementById(`view-mode-${videoId}`);
+            const edit = document.getElementById(`edit-mode-${videoId}`);
+            const isEditing = view.style.display === 'none';
+            view.style.display = isEditing ? 'block' : 'none';
+            edit.style.display = isEditing ? 'none' : 'block';
+        }
+
+        async function saveInlineEdit(videoId) {
+            const title = document.getElementById(`input-title-${videoId}`).value;
+            const description = document.getElementById(`input-desc-${videoId}`).value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const formData = new FormData();
+            formData.append('title', title); formData.append('description', description); formData.append('csrfmiddlewaretoken', csrfToken);
+            try {
+                const response = await fetch(`/video/${videoId}/edit/`, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById(`display-title-${videoId}`).innerText = data.title;
+                    document.getElementById(`display-desc-${videoId}`).innerText = data.description || "";
+                    toggleEditMode(videoId);
+                }
+            } catch (e) { alert('Ошибка при сохранении видео'); }
+        }
+
+        function toggleMatchEditMode() {
+            const view = document.getElementById('match-view-mode');
+            const edit = document.getElementById('match-edit-mode');
+            const isEditing = view.style.display === 'none';
+            view.style.display = isEditing ? 'block' : 'none';
+            edit.style.display = isEditing ? 'none' : 'block';
+        }
+
+        async function saveMatchInlineEdit() {
+            const title = document.getElementById('match-input-title').value;
+            const myScore = document.getElementById('match-input-my-score').value;
+            const oppScore = document.getElementById('match-input-opponent-score').value;
+            const description = document.getElementById('match-input-desc').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const formData = new FormData();
+            formData.append('title', title); formData.append('my_score', myScore); formData.append('opponent_score', oppScore);
+            formData.append('description', description); formData.append('date', "{{ match.date|date:'Y-m-d' }}"); formData.append('csrfmiddlewaretoken', csrfToken);
+            try {
+                const response = await fetch(`/{{ match.id }}/edit/`, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById('match-display-title').innerText = data.title;
+                    document.getElementById('match-display-score').innerText = `${data.my_score} : ${data.opponent_score}`;
+                    document.getElementById('match-display-desc').innerText = data.description || "";
+                    toggleMatchEditMode();
+                }
+            } catch (e) { alert('Ошибка при сохранении матча'); }
+        }
+
+        function checkVideoProgress() {
+            const badges = document.querySelectorAll('.processing-badge');
+            if (badges.length === 0) return;
+
+            badges.forEach(async (badge) => {
+                const videoId = badge.getAttribute('data-video-id');
+                try {
+                    const response = await fetch(`/video/${videoId}/progress/`);
+                    const data = await response.json();
+
+                    if (data.status === 'processing') {
+                        document.getElementById(`progress-val-${videoId}`).innerText = data.progress;
+                    } else if (data.status === 'ready' || data.status === 'error') {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Ошибка проверки статуса', error);
+                }
             });
         }
-    });
 
-    // --- ИНЛАЙН РЕДАКТИРОВАНИЕ ВИДЕО ---
-    function toggleEditMode(videoId) {
-        const view = document.getElementById(`view-mode-${videoId}`);
-        const edit = document.getElementById(`edit-mode-${videoId}`);
-        const isEditing = view.style.display === 'none';
-        view.style.display = isEditing ? 'block' : 'none';
-        edit.style.display = isEditing ? 'none' : 'block';
-    }
-
-    async function saveInlineEdit(videoId) {
-        const title = document.getElementById(`input-title-${videoId}`).value;
-        const description = document.getElementById(`input-desc-${videoId}`).value;
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const formData = new FormData();
-        formData.append('title', title); formData.append('description', description); formData.append('csrfmiddlewaretoken', csrfToken);
-        try {
-            const response = await fetch(`/video/${videoId}/edit/`, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-            const data = await response.json();
-            if (data.status === 'success') {
-                document.getElementById(`display-title-${videoId}`).innerText = data.title;
-                document.getElementById(`display-desc-${videoId}`).innerText = data.description || "";
-                toggleEditMode(videoId);
-            }
-        } catch (e) { alert('Ошибка при сохранении видео'); }
-    }
-
-    // --- ИНЛАЙН РЕДАКТИРОВАНИЕ МАТЧА ---
-    function toggleMatchEditMode() {
-        const view = document.getElementById('match-view-mode');
-        const edit = document.getElementById('match-edit-mode');
-        const isEditing = view.style.display === 'none';
-        view.style.display = isEditing ? 'block' : 'none';
-        edit.style.display = isEditing ? 'none' : 'block';
-    }
-
-    async function saveMatchInlineEdit() {
-        const title = document.getElementById('match-input-title').value;
-        const myScore = document.getElementById('match-input-my-score').value;
-        const oppScore = document.getElementById('match-input-opponent-score').value;
-        const description = document.getElementById('match-input-desc').value;
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const formData = new FormData();
-        formData.append('title', title); formData.append('my_score', myScore); formData.append('opponent_score', oppScore);
-        formData.append('description', description); formData.append('date', "{{ match.date|date:'Y-m-d' }}"); formData.append('csrfmiddlewaretoken', csrfToken);
-        try {
-            const response = await fetch(`/{{ match.id }}/edit/`, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-            const data = await response.json();
-            if (data.status === 'success') {
-                document.getElementById('match-display-title').innerText = data.title;
-                document.getElementById('match-display-score').innerText = `${data.my_score} : ${data.opponent_score}`;
-                document.getElementById('match-display-desc').innerText = data.description || "";
-                toggleMatchEditMode();
-            }
-        } catch (e) { alert('Ошибка при сохранении матча'); }
-    }
-
-    // --- АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ ПРОГРЕССА ОБРАБОТКИ ---
-    function checkVideoProgress() {
-        const badges = document.querySelectorAll('.processing-badge');
-        if (badges.length === 0) return; // Если нет видео в обработке - скрипт просто спит
-
-        badges.forEach(async (badge) => {
-            const videoId = badge.getAttribute('data-video-id');
-            try {
-                const response = await fetch(`/video/${videoId}/progress/`);
-                const data = await response.json();
-
-                if (data.status === 'processing') {
-                    // Обновляем циферку процентов прямо на лету
-                    document.getElementById(`progress-val-${videoId}`).innerText = data.progress;
-                } else if (data.status === 'ready' || data.status === 'error') {
-                    // Видео готово! Перезагружаем страницу один раз, чтобы отрендерился плеер
-                    window.location.reload();
-                }
-            } catch (error) {
-                console.error('Ошибка проверки статуса', error);
-            }
-        });
-    }
-
-    // Запускаем опрос сервера каждые 3 секунды, только если на странице есть желтая плашка "Обработка"
-    if (document.querySelectorAll('.processing-badge').length > 0) {
-        setInterval(checkVideoProgress, 3000);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        Plyr.setup('.js-player', {
-            // Включаем нужные элементы панели управления (как на YouTube)
-            controls: [
-                'play-large', // Большая кнопка Play по центру
-                'play',       // Маленькая кнопка слева внизу
-                'progress',   // Полоска прогресса
-                'current-time',
-                'duration',
-                'mute',
-                'volume',
-                'settings',
-                'pip',        // Картинка в картинке
-                'fullscreen'
-            ],
-            settings: ['speed'],
-            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-            i18n: { speed: 'Скорость', normal: 'Обычная' },
-
-            // Настройки мобильного взаимодействия:
-            seekTime: 10,        // Перемотка на 10 секунд по двойному тапу (справа/слева)
-            hideControls: true,  // Прятать контролы при бездействии
-            clickToPlay: true    // Пауза/Плей по одиночному клику на видео
-        });
-    });
-</script>
+        if (document.querySelectorAll('.processing-badge').length > 0) {
+            setInterval(checkVideoProgress, 3000);
+        }
+    </script>
 {% endblock %}
