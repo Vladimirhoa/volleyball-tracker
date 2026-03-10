@@ -17,7 +17,30 @@
     .action-buttons { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
     .action-buttons > .btn { flex: 1; text-align: center; }
 
-    .plyr { border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-top: 15px; overflow: hidden; }
+    /* --- НАСТРОЙКИ ПЛЕЕРА (МОБИЛЬНАЯ АДАПТАЦИЯ) --- */
+    .plyr {
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        margin-top: 15px;
+        overflow: hidden;
+        /* КРИТИЧНО ДЛЯ МОБИЛОК: Отключает зум браузера по двойному тапу, разрешая перемотку */
+        touch-action: manipulation;
+    }
+
+    /* Поднимаем панель управления, чтобы она не перекрывалась системной полоской (iPhone/Android) */
+    .plyr__controls {
+        padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important;
+        background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.7)) !important; /* Плавное затемнение снизу */
+    }
+
+    /* Делаем полоску прогресса толще, чтобы в нее было легко попасть пальцем */
+    .plyr--video .plyr__progress__container {
+        margin-bottom: 8px;
+    }
+    .plyr input[type='range'] {
+        height: 6px !important;
+    }
+
     .status-info { background-color: var(--warning); color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 15px; }
     .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
 
@@ -278,7 +301,29 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        Plyr.setup('.js-player', { speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] } });
+        Plyr.setup('.js-player', {
+            // Включаем нужные элементы панели управления (как на YouTube)
+            controls: [
+                'play-large', // Большая кнопка Play по центру
+                'play',       // Маленькая кнопка слева внизу
+                'progress',   // Полоска прогресса
+                'current-time',
+                'duration',
+                'mute',
+                'volume',
+                'settings',
+                'pip',        // Картинка в картинке
+                'fullscreen'
+            ],
+            settings: ['speed'],
+            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+            i18n: { speed: 'Скорость', normal: 'Обычная' },
+
+            // Настройки мобильного взаимодействия:
+            seekTime: 10,        // Перемотка на 10 секунд по двойному тапу (справа/слева)
+            hideControls: true,  // Прятать контролы при бездействии
+            clickToPlay: true    // Пауза/Плей по одиночному клику на видео
+        });
     });
 </script>
 {% endblock %}
