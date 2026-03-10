@@ -16,8 +16,11 @@ from django.urls import reverse
 import shutil
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-@login_required
+
 def match_list(request):
+    if not request.user.is_authenticated:
+        return render(request, 'match/landing.html')
+
     matches = Match.objects.filter(user=request.user).order_by('-date')
     user_videos = Video.objects.filter(user=request.user)
     user_total_size = sum(v.file_size for v in user_videos if v.file_size) or 0

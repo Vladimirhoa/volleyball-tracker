@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Добро пожаловать | V-Tracker{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 50px 20px; max-width: 600px; margin: 40px auto;">
+    <h1 style="font-size: 2rem; margin-bottom: 15px;">🏐 V-Tracker</h1>
+    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 30px;">
+        Ваш личный дневник волейбольных матчей. Сохраняйте результаты игр, ведите подробную статистику и загружайте лучшие видеомоменты, чтобы делиться ими с командой!
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+        <a href="{% url 'register' %}" class="btn btn-success" style="width: 100%; max-width: 300px; font-size: 1.1rem; padding: 14px;">
+            Создать дневник
+        </a>
+        <a href="{% url 'login' %}" class="btn btn-outline" style="width: 100%; max-width: 300px; font-size: 1.1rem; padding: 14px;">
+            Войти
+        </a>
+    </div>
+    
+    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 30px 0;">
+    
+    <div style="text-align: left; font-size: 0.95rem;">
+        <h3 style="margin-bottom: 10px; text-align: center;">Что внутри?</h3>
+        <ul style="color: var(--text-muted); padding-left: 20px; line-height: 1.8;">
+            <li>Фиксация счета и описание каждой игры.</li>
+            <li>Загрузка видео с авто-сжатием для экономии места.</li>
+            <li>Скачивание видео напрямую по ссылке из VK.</li>
+            <li>Генерация приватных ссылок, чтобы делиться записями с друзьями.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
