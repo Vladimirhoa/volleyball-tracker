@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (clickX < rect.width / 2) {
                     player.rewind(10);
-                    showRipple(container, '⏪ 10 сек', 'left');
+                    showRipple(container, ' 10 сек', 'left');
                 } else {
                     player.forward(10);
-                    showRipple(container, '10 сек ⏩', 'right');
+                    showRipple(container, '10 сек ', 'right');
                 }
 
                 if (!player.playing) player.play();
